@@ -7,10 +7,13 @@
 	import { clearToken, setLoginSession } from '../../service/auth';
 	import { COLOR_PRIMARY } from '../../types/color';
 	import Button from './ui/button/button.svelte';
+	import { onMount } from 'svelte';
 
 	let dropdownMenuOpen = $state(false);
 	let dropdownMenuAnchor = $state<HTMLElement>();
 	let mobileMenuAnchor = $state<HTMLElement>();
+
+	let headerRef = $state<HTMLElement>();
 
 	function onClickMobileMenu() {
 		if (mobileMenuAnchor?.classList.contains('fixed')) {
@@ -33,14 +36,25 @@
 		setLoginSession(false);
 		setAuthUser(null);
 	}
+
+	onMount(() => {
+		window.addEventListener('scroll', function () {
+			if (headerRef) {
+				if (window.scrollY === 0) {
+					headerRef.classList.remove('shadow-lg', 'border-b');
+				} else {
+					headerRef.classList.add('shadow-lg', 'border-b');
+				}
+			}
+		});
+	});
 </script>
 
-<header class="flex w-full flex-row justify-between">
-	<enhanced:img
-		src={kelarinLogo}
-		class="h-auto max-w-32 cursor-pointer md:max-w-40"
-		alt="kelarin logo"
-	/>
+<header
+	bind:this={headerRef}
+	class="fixed z-50 flex w-full flex-row justify-between border-[0.5px] border-primary bg-white px-8 py-5 md:p-10 xl:px-[110px] xl:py-10"
+>
+	<enhanced:img src={kelarinLogo} class="h-auto max-w-32 cursor-pointer md:max-w-40" alt="kelarin logo" />
 	<button type="button" class="md:hidden" onclick={onClickMobileMenu}>
 		<Menu class="text-primary" />
 	</button>
@@ -67,9 +81,7 @@
 							<DropdownMenu.Item>Transactions</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item class="cursor-pointer text-red-500" onclick={handleLogout}>
-							Log out
-						</DropdownMenu.Item>
+						<DropdownMenu.Item class="cursor-pointer text-red-500" onclick={handleLogout}>Log out</DropdownMenu.Item>
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
@@ -79,10 +91,7 @@
 	{/if}
 </header>
 
-<aside
-	bind:this={mobileMenuAnchor}
-	class="right-0 top-0 z-50 hidden h-screen w-full gap-x-3 gap-y-4 bg-primary px-8 py-14 text-white md:hidden"
->
+<aside bind:this={mobileMenuAnchor} class="right-0 top-0 z-50 hidden h-screen w-full gap-x-3 gap-y-4 bg-primary px-7 py-6 text-white md:hidden">
 	<X class="ml-auto" size="30" onclick={onClickMobileMenu} />
 	<div class="mt-10 flex h-full flex-col gap-y-4 overflow-auto">
 		{#if $isLoggedIn}

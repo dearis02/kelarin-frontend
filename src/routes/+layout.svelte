@@ -6,13 +6,7 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import { setAuthUser, type AuthUser } from '../store/auth';
-	import {
-		getToken,
-		googleLoginService,
-		isSessionExists,
-		setLoginSession,
-		setToken
-	} from '../service/auth';
+	import { getToken, googleLoginService, isSessionExists, setLoginSession, setToken } from '../service/auth';
 	import { jwtDecode } from 'jwt-decode';
 	import type { AuthDecodedAccessToken } from '../types/auth';
 	import { PUBLIC_GOOGLE_CLIENT_ID } from '$env/static/public';
@@ -54,10 +48,7 @@
 		if (err instanceof AxiosError) {
 			console.error(err);
 
-			if (
-				err.response?.status === HttpStatusCode.Forbidden ||
-				err.response?.status === HttpStatusCode.Unauthorized
-			) {
+			if (err.response?.status === HttpStatusCode.Forbidden || err.response?.status === HttpStatusCode.Unauthorized) {
 				alertDialog.message = err.response.data?.message;
 			} else {
 				alertDialog.message = 'Something went wrong, try again later!';
@@ -123,12 +114,12 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-	<main class="flex min-h-screen flex-col">
+	<Header />
+	<main class="min-h-screen pt-10">
 		<div class="container py-[50px]">
-			<Header />
 			{@render children()}
 		</div>
-		<Footer />
 	</main>
+	<Footer />
 	<AlertDialog isOpen={alertDialog.open} title={alertDialog.title} message={alertDialog.message} />
 </QueryClientProvider>

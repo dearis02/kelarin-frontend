@@ -3,6 +3,7 @@
 	import { COLOR_ACCENT, COLOR_PRIMARY } from '../../../types/color';
 	import type { ServiceGetAllRes } from '../../../types/service';
 	import { formatRupiah } from '$util/format_rupiah';
+	import { goto } from '$app/navigation';
 
 	type Props = {
 		service: ServiceGetAllRes;
@@ -20,11 +21,9 @@
 			<span class="font-semibold text-primary">{service.received_rating_average}</span>
 		</div>
 	{/if}
-	<img
-		src={service.image_url}
-		alt="service-img"
-		class="row-span-7 h-full w-full cursor-pointer rounded-t-lg object-cover"
-	/>
+	<a href={`/services/${service.id}`} class="row-span-7 cursor-pointer rounded-t-lg">
+		<img src={service.image_url} alt="service-img" class="h-full w-full object-cover" />
+	</a>
 	<div class="row-span-3 bg-white p-[14px]">
 		<div class="flex items-center gap-x-2">
 			<h1 class="flex-grow text-sm font-bold">{service.name}</h1>

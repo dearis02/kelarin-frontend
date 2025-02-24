@@ -52,11 +52,7 @@
 	});
 
 	function handleClickOutsideCategoryFilter(e: EventTarget | null) {
-		if (
-			e &&
-			!categoryFilterComboboxContent?.contains(e as Node) &&
-			!categoryFilterComboboxAnchor?.contains(e as Node)
-		) {
+		if (e && !categoryFilterComboboxContent?.contains(e as Node) && !categoryFilterComboboxAnchor?.contains(e as Node)) {
 			categoryFilterComboboxOpen = false;
 		}
 	}
@@ -97,10 +93,8 @@
 	$inspect(serviceFilter.categories);
 </script>
 
-<div class="mt-8 w-full">
-	<h1 class="hidden text-center text-lg font-bold md:block">
-		Find The Best Service That Fit Your Needs
-	</h1>
+<div class="mt-8 w-full md:mt-20">
+	<h1 class="hidden text-center text-lg font-bold md:block">Find The Best Service That Fit Your Needs</h1>
 	<div class="mt-7 flex w-full flex-wrap justify-center gap-x-2 gap-y-3 lg:gap-x-4">
 		<button
 			onclick={onClickAreaFilter}
@@ -110,13 +104,7 @@
 				selectedProvinceID != undefined ? 'bg-primary' : ''
 			)}
 		>
-			<MapPin
-				class={cn(
-					'mx-auto my-auto text-primary',
-					selectedProvinceID != undefined ? 'text-white' : ''
-				)}
-				size="30"
-			/>
+			<MapPin class={cn('mx-auto my-auto text-primary', selectedProvinceID != undefined ? 'text-white' : '')} size="30" />
 		</button>
 		<div class="relative order-1 basis-full lg:order-2 lg:flex-none">
 			<input
@@ -125,11 +113,7 @@
 				placeholder="Start your search"
 				bind:value={serviceFilter.keyword}
 			/>
-			<button
-				type="button"
-				class="absolute right-[18px] top-1/2 -translate-y-1/2 rounded-full bg-primary p-2"
-				onclick={handleOnConfirmFilter}
-			>
+			<button type="button" class="absolute right-[18px] top-1/2 -translate-y-1/2 rounded-full bg-primary p-2" onclick={handleOnConfirmFilter}>
 				<Search class="text-white" size="20" />
 			</button>
 		</div>
@@ -145,16 +129,10 @@
 			}}
 			aria-expanded={categoryFilterComboboxOpen}
 		>
-			<SlidersHorizontal
-				class={cn('text-primary', serviceFilter.categories.length ? 'text-white' : '')}
-			/>
+			<SlidersHorizontal class={cn('text-primary', serviceFilter.categories.length ? 'text-white' : '')} />
 		</button>
 		<Popover.Root bind:open={categoryFilterComboboxOpen}>
-			<Popover.Content
-				align="start"
-				customAnchor={categoryFilterComboboxAnchor}
-				bind:ref={categoryFilterComboboxContent}
-			>
+			<Popover.Content align="start" customAnchor={categoryFilterComboboxAnchor} bind:ref={categoryFilterComboboxContent}>
 				<Command.Root>
 					<Command.Input placeholder="Search category..." class="h-9" />
 					<Command.List>
@@ -167,11 +145,7 @@
 										onSelectCategory(category.name);
 									}}
 								>
-									<Check
-										class={cn(
-											!serviceFilter.categories.includes(category.name) && 'text-transparent'
-										)}
-									/>
+									<Check class={cn(!serviceFilter.categories.includes(category.name) && 'text-transparent')} />
 									{category.name}
 								</Command.Item>
 							{/each}
@@ -186,19 +160,14 @@
 	<!-- categories -->
 	<div class="hidden gap-x-3 overflow-x-auto text-nowrap py-4 font-bold lg:flex">
 		{#each data.serviceCategories as category}
-			<button
-				class="cursor-pointer rounded-full bg-primary px-6 py-2 text-white shadow-md hover:bg-green-500"
-				onclick={() => onSelectCategory(category.name)}
-			>
+			<button class="cursor-pointer rounded-full bg-primary px-6 py-2 text-white shadow-md hover:bg-green-500" onclick={() => onSelectCategory(category.name)}>
 				{category.name.toUpperCase()}
 			</button>
 		{/each}
 	</div>
 	<!-- end of categories -->
 
-	<div
-		class="mt-4 grid grid-cols-1 justify-center gap-x-[18px] gap-y-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-	>
+	<div class="mt-4 grid grid-cols-1 justify-center gap-x-[18px] gap-y-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#if $serviceGetAllSvc.isFetching}
 			<SkeletonServiceCard />
 			<SkeletonServiceCard class="hidden md:block" />
@@ -224,13 +193,7 @@
 				<Popover.Root bind:open={provinceComboboxOpen}>
 					<Popover.Trigger>
 						{#snippet child({ props })}
-							<Button
-								variant="outline"
-								class="w-full justify-between"
-								{...props}
-								role="combobox"
-								aria-expanded={provinceComboboxOpen}
-							>
+							<Button variant="outline" class="w-full justify-between" {...props} role="combobox" aria-expanded={provinceComboboxOpen}>
 								{serviceFilter.province == '' ? 'Select province' : serviceFilter.province}
 								<ChevronsUpDown class="opacity-50" />
 							</Button>
@@ -251,9 +214,7 @@
 												selectedProvinceID = province.id;
 											}}
 										>
-											<Check
-												class={cn(serviceFilter.province != province.name && 'text-transparent')}
-											/>
+											<Check class={cn(serviceFilter.province != province.name && 'text-transparent')} />
 											{province.name}
 										</Command.Item>
 									{/each}
@@ -268,13 +229,7 @@
 				<Popover.Root bind:open={cityComboboxOpen}>
 					<Popover.Trigger>
 						{#snippet child({ props })}
-							<Button
-								variant="outline"
-								class="w-full justify-between"
-								{...props}
-								role="combobox"
-								aria-expanded={cityComboboxOpen}
-							>
+							<Button variant="outline" class="w-full justify-between" {...props} role="combobox" aria-expanded={cityComboboxOpen}>
 								{serviceFilter.city == '' ? 'Select city' : serviceFilter.city}
 								<ChevronsUpDown class="opacity-50" />
 							</Button>
@@ -310,12 +265,7 @@
 	{#snippet footer()}
 		<div class="ml-auto">
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<Button
-				class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600"
-				onclick={resetAreaFilter}
-			>
-				Reset
-			</Button>
+			<Button class="bg-yellow-500 hover:bg-yellow-600 focus:bg-yellow-600" onclick={resetAreaFilter}>Reset</Button>
 			<Button variant="default" onclick={handleOnConfirmFilter}>Confirm</Button>
 		</div>
 	{/snippet}

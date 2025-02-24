@@ -7,15 +7,9 @@
 </script>
 
 <footer class="mt-auto w-full border-t border-gray-300">
-	<div
-		class="flex flex-col gap-y-3 bg-secondary p-10 md:flex-row md:justify-between md:px-10 lg:p-10 xl:px-[110px] xl:py-[60px]"
-	>
+	<div class="flex w-full flex-col gap-y-3 bg-secondary p-10 md:flex-row md:justify-between md:px-10 lg:p-10 xl:px-[110px] xl:py-[60px]">
 		<div>
-			<enhanced:img
-				src={kelarinLogoOnly}
-				alt="logo kelarin"
-				class="mb- h-[50px] w-[50px] self-center"
-			/>
+			<enhanced:img src={kelarinLogoOnly} alt="logo kelarin" class="mb- h-[50px] w-[50px] self-center" />
 			<h1 class="mt-2 text-xl font-bold text-primary">KELARIN</h1>
 			<h1 class="mt-3 text-xl font-bold text-black md:max-w-64 lg:max-w-full">
 				Find the best service that <span class="text-primary">Fit</span> your
@@ -35,9 +29,7 @@
 			</div>
 		</div>
 	</div>
-	<div
-		class="flex w-full items-center justify-between bg-primary px-10 py-6 md:px-20 xl:px-[110px] xl:py-[28px]"
-	>
+	<div class="flex w-full items-center justify-between bg-primary px-10 py-6 md:px-20 xl:px-[110px] xl:py-[28px]">
 		<span class="text-xs font-semibold text-white">© {year} Kelarin Inc. All rights reserved</span>
 		<div class="flex items-center gap-x-3">
 			<Mail class="text-white" />
