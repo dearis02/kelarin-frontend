@@ -5,9 +5,13 @@ import {
 	REFRESH_TOKEN_KEY,
 	type AuthLoginReq,
 	type AuthLoginRes,
+	type AuthRenewSessionReq,
+	type AuthRenewSessionRes,
 	type Token
 } from '../types/auth';
 import { isLoggedIn } from '../store/auth';
+import api from '$util/axios_interceptor';
+import type { ApiResponse } from '../types/api';
 
 export function googleLoginService(queryClient: QueryClient, api: AxiosInstance) {
 	return createMutation<AuthLoginRes, Error, AuthLoginReq>(
@@ -54,4 +58,10 @@ export function isSessionExists(): boolean {
 	});
 
 	return _isLoggedIn && !!getToken();
+}
+
+export async function authRenewSessionService(req: AuthRenewSessionReq): Promise<AuthRenewSessionRes> {
+	const res = await api.post<AuthRenewSessionRes, ApiResponse<AuthRenewSessionRes>>('/v1/auth/_renew_session', req);
+
+	return res.data;
 }

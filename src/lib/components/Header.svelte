@@ -8,6 +8,7 @@
 	import { COLOR_PRIMARY } from '../../types/color';
 	import Button from './ui/button/button.svelte';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	let dropdownMenuOpen = $state(false);
 	let dropdownMenuAnchor = $state<HTMLElement>();
@@ -76,7 +77,7 @@
 						<DropdownMenu.GroupHeading>My Account</DropdownMenu.GroupHeading>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
-							<DropdownMenu.Item>Address</DropdownMenu.Item>
+							<DropdownMenu.Item onclick={() => goto('/addresses')}>Address</DropdownMenu.Item>
 							<DropdownMenu.Item>Orders</DropdownMenu.Item>
 							<DropdownMenu.Item>Transactions</DropdownMenu.Item>
 						</DropdownMenu.Group>

@@ -12,8 +12,9 @@
 	import { PUBLIC_GOOGLE_CLIENT_ID } from '$env/static/public';
 	import api from '$util/axios_interceptor';
 	import AlertDialog from '$lib/components/dialog/AlertDialog.svelte';
-	import { AxiosError, HttpStatusCode, type AxiosResponse } from 'axios';
+	import { AxiosError, HttpStatusCode } from 'axios';
 	import { isGSIClientLoaded } from '../store/google';
+	import { Toaster } from 'svelte-french-toast';
 
 	let { children } = $props();
 
@@ -123,3 +124,5 @@
 	<Footer />
 	<AlertDialog isOpen={alertDialog.open} title={alertDialog.title} message={alertDialog.message} />
 </QueryClientProvider>
+
+<Toaster position="top-center" />

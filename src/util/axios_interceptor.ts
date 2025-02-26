@@ -1,12 +1,8 @@
-import axios, {
-	AxiosError,
-	type InternalAxiosRequestConfig,
-	type AxiosResponse,
-	HttpStatusCode
-} from 'axios';
+import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse, HttpStatusCode } from 'axios';
 import { env } from '$env/dynamic/public';
-import { getToken } from '../service/auth';
+import { authRenewSessionService, getToken, setLoginSession, setToken } from '../service/auth';
 import { browser } from '$app/environment';
+import { error } from '@sveltejs/kit';
 
 const baseURL = env.PUBLIC_API_BASE_URL;
 const instance = axios.create({
@@ -36,8 +32,8 @@ function onResponse(response: AxiosResponse): AxiosResponse {
 	return response.data;
 }
 
-async function onError(error: CustomError): Promise<CustomError> {
-	const { config, response } = error;
+async function onError(err: CustomError): Promise<CustomError> {
+	const { config, response } = err;
 
 	if (config?.retry || (config?.url?.includes('/auth/refresh-token') ?? false)) {
 		// try {
@@ -47,25 +43,42 @@ async function onError(error: CustomError): Promise<CustomError> {
 		// 	window.location.href = '/'
 		// }
 
-		return Promise.reject(error);
+		return Promise.reject(err);
 	}
 
-	if (
-		response?.status === HttpStatusCode.Unauthorized &&
-		!(config?.url?.includes('/auth/refresh-token') ?? false)
-	) {
+	if (response?.status === HttpStatusCode.Unauthorized && !(config?.url?.includes('/auth/refresh-token') ?? false)) {
 		config.retry = true;
+
+		const t = getToken();
+		if (!t) {
+			window.location.href = '/';
+			return Promise.reject(error);
+		}
+
+		try {
+			const res = await authRenewSessionService({ refresh_token: t.refreshToken });
+			setToken(res.access_token, res.refresh_token);
+			setLoginSession(true);
+
+			if (config?.headers?.Authorization) {
+				config.headers.Authorization = `Bearer ${res.access_token}`;
+			}
+			return instance(config);
+		} catch (error) {
+			console.error(error);
+			return Promise.reject(error);
+		}
 	}
 
-	if (response?.status === 404) {
-		// redirect(HttpStatusCode.TemporaryRedirect,'/404')
+	if (response?.status == HttpStatusCode.NotFound) {
+		error(HttpStatusCode.NotFound, { message: 'NOT FOUND' });
+	} else if (response?.status == HttpStatusCode.Unauthorized) {
+		error(HttpStatusCode.Unauthorized, { message: 'FORBIDDEN' });
 	}
-
-	// const responseStatus = response?.status
 
 	// if (responseStatus! >= 500) window.location.href = '/500'
 
-	return Promise.reject(error);
+	return Promise.reject(err);
 }
 
 instance.interceptors.request.use(onRequest, onError);
