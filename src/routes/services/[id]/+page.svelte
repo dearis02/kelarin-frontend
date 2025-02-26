@@ -1,12 +1,39 @@
 <script lang="ts">
 	import Carousel from '$lib/components/carousel/Carousel.svelte';
-	import { CalendarCheck, ChevronRight, ChevronLeft, CircleCheck, CircleX, Star, MessageCircleMore, MapPin, Smartphone, Phone, CalendarX } from 'lucide-svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index';
+	import * as Select from '$lib/components/ui/select';
+	import {
+		CalendarCheck,
+		ChevronRight,
+		ChevronLeft,
+		CircleCheck,
+		CircleX,
+		Star,
+		MessageCircleMore,
+		MapPin,
+		Smartphone,
+		Phone,
+		CalendarX,
+		LoaderCircle,
+		CircleCheckBig,
+		X
+	} from 'lucide-svelte';
 	import { COLOR_PRIMARY } from '../../../types/color';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { onMount } from 'svelte';
 	import { cn } from '$lib/utils';
 	import type { PageProps } from './$types';
-	import { formatRupiahRange } from '$util/format_rupiah';
+	import { formatRupiah, formatRupiahRange } from '$util/format_rupiah';
+	import Dialog from '$lib/components/dialog/Dialog.svelte';
+	import { offerSendService } from '../../../service/offer';
+	import { offerCreateValidationSchema, type OfferCreateForm, type OfferCreateReq } from '../../../types/offer';
+	import type { ValidationError } from '../../../types/error';
+	import { transformZodError } from '$util/error';
+	import InputField from '$lib/components/form/InputField.svelte';
+	import TextArea from '$lib/components/form/TextArea.svelte';
+	import { addressGetAllService } from '../../../service/address';
+	import Label from '$lib/components/ui/label/label.svelte';
+	import { AxiosError, HttpStatusCode } from 'axios';
 
 	let props: PageProps = $props();
 	let { service } = props.data;
@@ -19,6 +46,59 @@
 	let showMoreDescBtn = $state(false);
 	let showMoreDescBtnRef = $state<HTMLButtonElement>();
 	let descExpanded = $state(false);
+
+	let alertDialogOpen = $state(false);
+	let alertDialogMsg = $state('failed to send offer, try again later');
+
+	let sendOfferFormDialogOpen = $state(false);
+	let sendOfferForm = $state<OfferCreateForm>({
+		service_id: service.id,
+		address_id: '',
+		detail: '',
+		service_cost: Number(service.fee_start_at),
+		service_start_date: '',
+		service_end_date: '',
+		service_start_time: '',
+		service_end_time: ''
+	});
+	let errors = $state<ValidationError[]>([]);
+
+	const sendOfferService = offerSendService();
+	const getAllAddressService = addressGetAllService();
+
+	const selectedAddress = $derived.by(() => {
+		const address = $getAllAddressService.data?.find((a) => a.id == sendOfferForm.address_id);
+
+		if (address) {
+			return `${address.name} | ${address.city}, ${address.province}`;
+		}
+	});
+
+	sendOfferService.subscribe((res) => {
+		if (res.isSuccess) {
+			alertDialogOpen = true;
+			sendOfferFormDialogOpen = false;
+		}
+
+		if (res.isError) {
+			if (res.error instanceof AxiosError) {
+				const resCode = res.error.response?.status;
+				const errorsRes = res.error.response?.data.errors as ValidationError[];
+
+				errors = errorsRes;
+
+				if (resCode === HttpStatusCode.Forbidden) {
+					sendOfferFormDialogOpen = false;
+					alertDialogMsg = res.error.response?.data.message;
+					alertDialogOpen = true;
+				} else {
+					alertDialogOpen = true;
+				}
+			} else {
+				alertDialogOpen = true;
+			}
+		}
+	});
 
 	function onClickShowMoreDescBtn() {
 		if (showMoreDescBtnRef && descriptionRef) {
@@ -41,6 +121,43 @@
 		});
 	}
 
+	function onSendOfferFormSubmit() {
+		const { data, error, success } = offerCreateValidationSchema(Number(service.fee_start_at)).safeParse(sendOfferForm);
+		if (!success) {
+			errors = transformZodError(error);
+			return;
+		}
+
+		const req: OfferCreateReq = { ...data };
+		$sendOfferService.mutate(req);
+	}
+
+	function resetForm() {
+		sendOfferForm = {
+			service_id: service.id,
+			address_id: '',
+			detail: '',
+			service_cost: Number(service.fee_start_at),
+			service_start_date: '',
+			service_end_date: '',
+			service_start_time: '',
+			service_end_time: ''
+		};
+	}
+
+	$effect(() => {
+		if (!sendOfferFormDialogOpen) {
+			errors = [];
+			resetForm();
+		}
+	});
+
+	$effect(() => {
+		if (sendOfferForm.service_cost == null && sendOfferFormDialogOpen) {
+			sendOfferForm.service_cost = Number(service.fee_start_at);
+		}
+	});
+
 	onMount(() => {
 		if (descriptionRef) {
 			if (descriptionRef.scrollHeight > descriptionRef.clientHeight) {
@@ -48,6 +165,8 @@
 			}
 		}
 	});
+
+	$inspect(sendOfferForm);
 </script>
 
 <div class="mt-4 w-full md:mt-16">
@@ -57,10 +176,15 @@
 		<img src="https://placehold.co/600x400/png" alt="" class="h-full w-full object-cover lg:col-span-4" />
 		<img src="https://placehold.co/300x600/png" alt="" class="h-full w-full object-cover lg:col-span-3 lg:row-span-2" /> -->
 
-		<img src={service.image_urls[0]} alt="" class="h-full w-full object-cover lg:col-span-5 lg:row-span-2" />
-		<img src={service.image_urls[1] ?? 'https://placehold.co/600x400/png'} alt="" class="h-full w-full object-cover lg:col-span-4" />
-		<img src={service.image_urls[2] ?? 'https://placehold.co/600x400/png'} alt="" class="h-full w-full object-cover lg:col-span-4" />
-		<img src={service.image_urls[3] ?? 'https://placehold.co/300x600/png'} alt="" class="h-full w-full object-cover lg:col-span-3 lg:row-span-2" />
+		<img src={service.image_urls[0]} alt="" class="h-full w-full object-cover lg:col-span-5 lg:row-span-2" loading="lazy" />
+		<img src={service.image_urls[1] ?? 'https://placehold.co/600x400/png'} alt="" class="h-full w-full object-cover lg:col-span-4" loading="lazy" />
+		<img src={service.image_urls[2] ?? 'https://placehold.co/600x400/png'} alt="" class="h-full w-full object-cover lg:col-span-4" loading="lazy" />
+		<img
+			src={service.image_urls[3] ?? 'https://placehold.co/300x600/png'}
+			alt=""
+			class="h-full w-full object-cover lg:col-span-3 lg:row-span-2"
+			loading="lazy"
+		/>
 	</div>
 	<div class="w-full lg:hidden">
 		<Carousel class="mx-auto h-80 w-full" images={service.image_urls} />
@@ -196,7 +320,7 @@
 					<span class="mb-1 block text-[#898989]">Fee</span>
 					<span class="text-xl font-bold">{formatRupiahRange(service.fee_start_at, service.fee_end_at)} </span>
 				</div>
-				<Button class="col-span-full text-[16px] font-bold">Order Now</Button>
+				<Button class="col-span-full text-[16px] font-bold" onclick={() => (sendOfferFormDialogOpen = true)}>Send an Offer</Button>
 				<span class="text-start text-sm">Kelarin service fee</span>
 				<span class="text-end text-sm">RP 5.000</span>
 				<div class="col-span-full h-[1px] w-full bg-primary"></div>
@@ -209,3 +333,94 @@
 		</div>
 	</div>
 </div>
+
+<Dialog bind:isOpen={sendOfferFormDialogOpen}>
+	{#snippet body()}
+		<h1 class="mb-10 text-center text-xl font-medium text-black">Send Offer</h1>
+		<form class="grid grid-flow-row gap-x-4 gap-y-6 text-black md:grid-cols-2">
+			<div class="relative col-span-full">
+				<Label>Address</Label>
+				<Select.Root type="single" name="address_id" bind:value={sendOfferForm.address_id}>
+					<Select.Trigger class="mt-2 w-full bg-white">{selectedAddress ?? 'Select address'}</Select.Trigger>
+					<Select.Content class="bg-white">
+						<Select.Group>
+							<Select.GroupHeading>Address</Select.GroupHeading>
+							{#each $getAllAddressService.data as a}
+								<Select.Item value={a.id} label={a.name} />
+							{/each}
+						</Select.Group>
+					</Select.Content>
+				</Select.Root>
+				{#if errors.find((err) => err.field === 'address_id')}
+					<p class="absolute -bottom-6 text-sm text-red-500">{errors.find((err) => err.field === 'address_id')?.message}</p>
+				{/if}
+			</div>
+			<TextArea label="Detail" name="detail" {errors} bind:value={sendOfferForm.detail} class="col-span-full focus:border-none" />
+			<div class="relative col-span-full">
+				<InputField
+					type="number"
+					label="Service Cost in Rupiah"
+					name="service_cost"
+					min={Number(service.fee_start_at)}
+					{errors}
+					bind:value={sendOfferForm.service_cost}
+					class="focus:border-none"
+				/>
+				<p class="absolute -bottom-6 right-0 text-end text-sm font-bold text-primary">Min cost {formatRupiah(service.fee_start_at)}</p>
+			</div>
+			<InputField
+				type="date"
+				label="Service Start Date"
+				name="service_start_date"
+				{errors}
+				bind:value={sendOfferForm.service_start_date}
+				class="focus:border-none"
+			/>
+			<InputField type="date" label="Service End Date" name="service_end_date" {errors} bind:value={sendOfferForm.service_end_date} class="focus:border-none" />
+			<InputField
+				type="time"
+				label="Service Start Time"
+				name="service_start_time"
+				{errors}
+				bind:value={sendOfferForm.service_start_time}
+				class="focus:border-none"
+			/>
+			<InputField type="time" label="Service End Time" name="service_end_time" {errors} bind:value={sendOfferForm.service_end_time} class="focus:border-none" />
+		</form>
+	{/snippet}
+
+	{#snippet footer()}
+		<AlertDialog.Cancel disabled={$sendOfferService.isPending}>Cancel</AlertDialog.Cancel>
+		<Button onclick={onSendOfferFormSubmit} disabled={$sendOfferService.isPending}>
+			{#if $sendOfferService.isPending}
+				<LoaderCircle class="animate-spin" />
+			{/if}
+			Send
+		</Button>
+	{/snippet}
+</Dialog>
+
+<!-- send offer result dialog -->
+<Dialog bind:isOpen={alertDialogOpen} class="md:max-w-md" useDefaultFooter={false}>
+	{#snippet body()}
+		<div class="grid w-full grid-flow-row place-items-center gap-y-4 text-black">
+			<h1 class="text-xl font-medium">Offer</h1>
+			{#if $sendOfferService.isSuccess}
+				<CircleCheckBig size="40" class="text-primary" />
+				<p>Offer has been sent</p>
+			{:else if $sendOfferService.isError}
+				<X size="40" class="text-red-500" />
+				<p>Failed to send offer</p>
+				<p>{alertDialogMsg}</p>
+			{/if}
+		</div>
+	{/snippet}
+	{#snippet footer()}
+		{#if $sendOfferService.isSuccess}
+			<a href="/offers">
+				<Button class="w-full">Go to Offers</Button>
+			</a>
+		{/if}
+		<Button variant="outline" class="mx-auto w-full" onclick={() => (alertDialogOpen = false)}>Close</Button>
+	{/snippet}
+</Dialog>

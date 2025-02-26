@@ -25,7 +25,7 @@
 	});
 </script>
 
-<div class={cn('flex flex-col gap-y-2', className)}>
+<div class={cn('relative flex flex-col gap-y-2', className)}>
 	<Label for={restProps.name} class="text-sm font-medium">{restProps.label}</Label>
 	<Textarea
 		id={restProps.name}
@@ -38,6 +38,6 @@
 		}}
 	/>
 	{#if isError}
-		<p class="text-sm text-red-500">{errMessage}</p>
+		<p class="absolute -bottom-6 text-sm text-red-500">{errMessage}</p>
 	{/if}
 </div>

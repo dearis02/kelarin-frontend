@@ -196,7 +196,7 @@
 		<AlertDialog.Cancel onclick={resetForm} disabled={$createAddress.isPending || $updateAddress.isPending}>Close</AlertDialog.Cancel>
 		<Button disabled={$createAddress.isPending || $updateAddress.isPending} onclick={handleOnFormSubmit}>
 			{#if $createAddress.isPending || $updateAddress.isPending}
-				<LoaderCircle />
+				<LoaderCircle class="animate-spin" />
 			{/if}
 			Save
 		</Button>

@@ -9,7 +9,8 @@ export function addressGetAllService() {
 		queryFn: async () => {
 			const res = await api.get<AddressGetAllRes, ApiResponse<AddressGetAllRes[]>>('/consumer/v1/addresses');
 			return res.data;
-		}
+		},
+		initialData: []
 	});
 }
 

@@ -8,9 +8,10 @@
 		body?: Snippet;
 		footer?: Snippet;
 		class?: string;
+		useDefaultFooter?: boolean;
 	};
 
-	let { isOpen = $bindable(), ...props }: Props = $props();
+	let { isOpen = $bindable(), useDefaultFooter = true, ...props }: Props = $props();
 </script>
 
 <AlertDialog.Root bind:open={isOpen}>
@@ -20,8 +21,12 @@
 				{@render props.body?.()}
 			</AlertDialog.Description>
 		</AlertDialog.Header>
-		<AlertDialog.Footer class="mt-10">
+		{#if useDefaultFooter}
+			<AlertDialog.Footer class="mt-10">
+				{@render props.footer?.()}
+			</AlertDialog.Footer>
+		{:else}
 			{@render props.footer?.()}
-		</AlertDialog.Footer>
+		{/if}
 	</AlertDialog.Content>
 </AlertDialog.Root>
