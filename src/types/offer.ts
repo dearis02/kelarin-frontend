@@ -1,5 +1,6 @@
 import { parseTime } from '$lib/utils';
 import { formatRupiah } from '$util/format_rupiah';
+import type Decimal from 'decimal.js';
 import { z } from 'zod';
 
 export type OfferCreateReq = {
@@ -84,3 +85,68 @@ export function offerCreateValidationSchema(minCost: number) {
 }
 
 export type OfferCreateForm = z.infer<ReturnType<typeof offerCreateSchema>>;
+
+export type OfferGetAllRes = {
+	id: string;
+	service_cost: Decimal;
+	service_start_date: Date;
+	service_end_date: Date;
+	service_start_time: string;
+	service_end_time: string;
+	service_time_time_zone: string;
+	has_pending_negotiation: boolean;
+	created_at: Date;
+	service: OfferGetAllResService;
+	service_provider: OfferGetAllResServiceProvider;
+};
+
+export type OfferGetAllResService = {
+	id: string;
+	name: string;
+	image_url: string;
+};
+
+export type OfferGetAllResServiceProvider = {
+	id: string;
+	name: string;
+	logo_url: string;
+};
+
+export interface OfferGetByIDRes {
+	id: string;
+	service_cost: string;
+	detail: string;
+	service_start_date: string;
+	service_end_date: string;
+	service_start_time: string;
+	service_end_time: string;
+	service_time_time_zone: string;
+	has_pending_negotiation: boolean;
+	created_at: Date;
+	service: OfferGetByIDResService;
+	service_provider: OfferGetByIDResServiceProvider;
+	address: OfferGetByIDResAddress;
+}
+
+export interface OfferGetByIDResAddress {
+	id: string;
+	name: string;
+	province: string;
+	city: string;
+	lat: number | null;
+	lng: number | null;
+	address: string;
+}
+
+export interface OfferGetByIDResService {
+	id: string;
+	name: string;
+}
+
+export interface OfferGetByIDResServiceProvider {
+	id: string;
+	name: string;
+	logo_url: string;
+	received_rating_count: number;
+	received_rating_average: number;
+}

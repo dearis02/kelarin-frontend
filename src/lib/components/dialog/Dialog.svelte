@@ -15,7 +15,7 @@
 </script>
 
 <AlertDialog.Root bind:open={isOpen}>
-	<AlertDialog.Content class={cn('md:max-w-screen-md', props.class)}>
+	<AlertDialog.Content class={cn('max-h-[80%] md:max-w-screen-md', props.class)}>
 		<AlertDialog.Header>
 			<AlertDialog.Description>
 				{@render props.body?.()}

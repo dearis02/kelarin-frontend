@@ -78,8 +78,9 @@
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
 							<DropdownMenu.Item onclick={() => goto('/addresses')}>Address</DropdownMenu.Item>
+							<DropdownMenu.Item onclick={() => goto('/offers')}>Offers</DropdownMenu.Item>
 							<DropdownMenu.Item>Orders</DropdownMenu.Item>
-							<DropdownMenu.Item>Transactions</DropdownMenu.Item>
+							<DropdownMenu.Item>Payments</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item class="cursor-pointer text-red-500" onclick={handleLogout}>Log out</DropdownMenu.Item>

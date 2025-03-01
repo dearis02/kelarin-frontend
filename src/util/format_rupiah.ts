@@ -1,9 +1,16 @@
-export function formatRupiah(val: string) {
-	return Intl.NumberFormat('id-ID', {
+export function formatRupiah(val: string, withCurrencySymbol = true) {
+	const formatted = Intl.NumberFormat('id-ID', {
 		style: 'currency',
 		currency: 'IDR',
-		minimumFractionDigits: 0
+		minimumFractionDigits: 0,
+		currencyDisplay: 'narrowSymbol'
 	}).format(BigInt(val));
+
+	if (withCurrencySymbol) {
+		return formatted;
+	} else {
+		return formatted.replace('Rp', '');
+	}
 }
 
 export function formatRupiahRange(val1: string | number, val2: string | number) {

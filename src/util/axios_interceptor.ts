@@ -23,6 +23,8 @@ function onRequest(config: InternalAxiosRequestConfig): InternalAxiosRequestConf
 		if (token) {
 			config.headers.Authorization = `Bearer ${token.accessToken}`;
 		}
+
+		config.headers['Time-Zone'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	}
 
 	return config;
