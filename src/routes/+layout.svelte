@@ -4,7 +4,7 @@
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import '../app.css';
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, type ComponentType } from 'svelte';
 	import { setAuthUser, type AuthUser } from '../store/auth';
 	import { getToken, googleLoginService, isSessionExists, setLoginSession, setToken } from '../service/auth';
 	import { jwtDecode } from 'jwt-decode';
@@ -14,7 +14,9 @@
 	import AlertDialog from '$lib/components/dialog/AlertDialog.svelte';
 	import { AxiosError, HttpStatusCode } from 'axios';
 	import { isGSIClientLoaded } from '../store/google';
-	import { Toaster } from 'svelte-french-toast';
+	import { initFirebaseMessaging, requestPermission } from '$util/firebase';
+	import { Toaster } from '$lib/components/ui/sonner/index';
+	import { toast } from 'svelte-sonner';
 
 	let { children } = $props();
 
@@ -23,6 +25,7 @@
 		title: '',
 		message: ''
 	});
+	const notifToast = toast('notification');
 
 	const queryClient = new QueryClient({
 		defaultOptions: {
@@ -93,7 +96,7 @@
 		}
 	});
 
-	onMount(() => {
+	onMount(async () => {
 		const script = document.createElement('script');
 		script.src = 'https://accounts.google.com/gsi/client';
 		script.onload = initializeGoogleOneTap;
@@ -110,6 +113,9 @@
 				role: claims.role
 			};
 			setAuthUser(authUser);
+
+			await initFirebaseMessaging(notifToast);
+			await requestPermission();
 		}
 	});
 </script>
@@ -125,4 +131,4 @@
 	<AlertDialog isOpen={alertDialog.open} title={alertDialog.title} message={alertDialog.message} />
 </QueryClientProvider>
 
-<Toaster position="top-center" />
+<Toaster />

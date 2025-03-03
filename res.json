@@ -1,45 +1,32 @@
 {
-    "status_code": 200,
-    "message": "OK",
-    "data": {
-        "id": "01950024-34b5-7f07-8df6-bd29b7d975f8",
-        "name": "Service AC 1",
-        "description": "service ac nih ges",
-        "delivery_methods": [
-            "onsite"
-        ],
-        "image_urls": [
-            "https://kelarin.s3.ap-southeast-3.amazonaws.com/images/service/1739464127_a5df61ae09cefcd7a36da46ff88fffc41c5ca643.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD3HOKAU2EI7UU%2F20250222%2Fap-southeast-3%2Fs3%2Faws4_request&X-Amz-Date=20250222T113705Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=2cd34d1a8f39f1dde86b8a5422f76001c995760816a8b68cc81ce403c505a395",
-            "https://kelarin.s3.ap-southeast-3.amazonaws.com/images/service/1739464127_750c37fca6a182d4695c2c0643e3c2adec363052.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD3HOKAU2EI7UU%2F20250222%2Fap-southeast-3%2Fs3%2Faws4_request&X-Amz-Date=20250222T113705Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=b6c312b057a534abea26587c19daa544befd0a91cd420cbdb98e90e74a381710",
-            "https://kelarin.s3.ap-southeast-3.amazonaws.com/images/service/1739464127_e13d1212fe62349515b5f7a27bddf7dd352a3b4b.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD3HOKAU2EI7UU%2F20250222%2Fap-southeast-3%2Fs3%2Faws4_request&X-Amz-Date=20250222T113705Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=c64bf0ee10fc4f2174294f32633e381c8cb24362c8d5bfebd9f6e505182b81d6"
-        ],
-        "fee_start_at": "1000000",
-        "fee_end_at": "2000000000",
-        "rules": [
-            {
-                "type": "inclusion",
-                "name": "cleaning indoor"
-            },
-            {
-                "type": "exclusion",
-                "name": "isi freo"
-            }
-        ],
-        "is_available": true,
-        "received_rating_count": 1,
-        "received_rating_average": 3,
-        "service_provider": {
-            "id": "01945f56-5651-7459-bab4-8d5f3438ce70",
-            "name": "ARIS ",
-            "description": "foo bar desc",
-            "province": "BALI",
-            "city": "KAB. GIANYAR",
-            "address": "Dapurku, Jalan Raya Ubud, Ubud 80571, Bali, Indonesia",
-            "mobile_phone_number": "081998876985",
-            "telephone": "",
-            "logo_image_url": "https://kelarin.s3.ap-southeast-3.amazonaws.com/service_provider/logo/1736766273_2f3ab033a43e444ce371694c282ae76e2df87a53?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD3HOKAU2EI7UU%2F20250222%2Fap-southeast-3%2Fs3%2Faws4_request&X-Amz-Date=20250222T113705Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=1ff9abdf8ed0119ff25ac125273a4783b7cf247eab2d7a3c94652a3223ad8ae5",
-            "received_rating_count": 0,
-            "received_rating_average": 0
-        }
-    }
+	"status_code": 200,
+	"message": "OK",
+	"data": {
+		"id": "01954354-31b0-73d4-b35c-7456c69ae877",
+		"service_cost": "100000",
+		"service_start_date": "2025-03-01",
+		"service_end_date": "2025-03-07",
+		"service_start_time": "02:53:59",
+		"service_end_time": "05:56:59",
+		"service_time_time_zone": "Asia/Tokyo",
+		"has_pending_negotiation": false,
+		"created_at": "2025-02-27T01:35:46.096254+08:00",
+		"service": { "id": "01945f56-5651-7459-bab4-8d5f3438ce70", "name": "Service mesin AC" },
+		"service_provider": {
+			"id": "01945f56-5651-7459-bab4-8d5f3438ce70",
+			"name": "ARIS ",
+			"logo_url": "https://kelarin.s3.ap-southeast-3.amazonaws.com/service_provider/logo/1736766273_2f3ab033a43e444ce371694c282ae76e2df87a53?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIA3FLD3HOKAU2EI7UU%2F20250228%2Fap-southeast-3%2Fs3%2Faws4_request\u0026X-Amz-Date=20250228T082124Z\u0026X-Amz-Expires=900\u0026X-Amz-SignedHeaders=host\u0026x-id=GetObject\u0026X-Amz-Signature=83365deb7ec416727e40d1b4e12eba17ade1928f5e966593fa1c9ce0cc425cb8",
+			"received_rating_count": 0,
+			"received_rating_average": 0
+		},
+		"address": {
+			"id": "019541b4-1bfc-75fb-b38c-9474aecf4400",
+			"name": "Office 1",
+			"province": "Jawa Barat",
+			"city": "Bekasi",
+			"lat": -6.240250010485369,
+			"lng": 107.02349271771118,
+			"address": "ajwdna kwndkj awkd"
+		}
+	}
 }

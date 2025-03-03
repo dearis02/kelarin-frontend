@@ -19,7 +19,7 @@
 	import TextArea from '$lib/components/form/TextArea.svelte';
 	import { LoaderCircle } from 'lucide-svelte';
 	import { transformZodError } from '$util/error';
-	import toast from 'svelte-french-toast';
+	import { toast } from 'svelte-sonner';
 
 	let addresses = $state<AddressGetAllRes[]>([]);
 	let selectedAddress = $state<AddressGetAllRes>();
