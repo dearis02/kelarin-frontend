@@ -79,7 +79,7 @@
 						<DropdownMenu.Group>
 							<DropdownMenu.Item onclick={() => goto('/addresses')}>Address</DropdownMenu.Item>
 							<DropdownMenu.Item onclick={() => goto('/offers')}>Offers</DropdownMenu.Item>
-							<DropdownMenu.Item>Orders</DropdownMenu.Item>
+							<DropdownMenu.Item onclick={() => goto('/orders')}>Orders</DropdownMenu.Item>
 							<DropdownMenu.Item>Payments</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
