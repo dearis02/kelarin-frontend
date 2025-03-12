@@ -9,12 +9,35 @@
 	import Button from './ui/button/button.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import Icon from '@iconify/svelte';
+	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import { notificationGetAllService } from '../../service/notification';
+	import type { NotificationGetAllRes } from '../../types/notification';
+	import NotificationCard from './card/NotificationCard.svelte';
+	import Divider from './Divider.svelte';
 
 	let dropdownMenuOpen = $state(false);
 	let dropdownMenuAnchor = $state<HTMLElement>();
 	let mobileMenuAnchor = $state<HTMLElement>();
+	let notificationSheetOpen = $state(false);
 
 	let headerRef = $state<HTMLElement>();
+
+	let notifications = $state<NotificationGetAllRes[]>([]);
+	let countUnreadNotification = $derived.by(() => {
+		return notifications.filter((n) => !n.read).length;
+	});
+
+	const notificationGetAllSvc = notificationGetAllService();
+	notificationGetAllSvc.subscribe((res) => {
+		if (res.isSuccess) {
+			notifications = res.data.data;
+		}
+	});
+
+	function onClickNotificationBtn() {
+		notificationSheetOpen = !notificationSheetOpen;
+	}
 
 	function onClickMobileMenu() {
 		if (mobileMenuAnchor?.classList.contains('fixed')) {
@@ -65,11 +88,17 @@
 			class="hidden items-center gap-x-3 rounded-full border border-accent bg-white px-6 py-2 shadow-xl outline outline-primary md:flex md:min-w-[150px]"
 		>
 			<span class="flex-grow cursor-pointer font-semibold">{$authUser?.name}</span>
-			<button>
-				<Menu class="text-primary" onclick={onClickDropdownMenu} />
+			<button onclick={onClickNotificationBtn} class="relative">
+				<div class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border bg-yellow-300">
+					<span class="text-sm text-black">{countUnreadNotification}</span>
+				</div>
+				<Icon icon="basil:notification-solid" class="text-primary" height="30" />
+			</button>
+			<button onclick={onClickDropdownMenu}>
+				<Icon icon="ic:round-menu" class="text-primary" height="30" />
 			</button>
 			<button>
-				<UserRound class="text-primary" />
+				<Icon icon="mingcute:user-2-fill" class="text-primary" height="30" />
 			</button>
 			<DropdownMenu.Root bind:open={dropdownMenuOpen}>
 				<DropdownMenu.Content class="w-[150px] bg-white" customAnchor={dropdownMenuAnchor}>
@@ -113,3 +142,20 @@
 		{/if}
 	</div>
 </aside>
+
+<Sheet.Root bind:open={notificationSheetOpen}>
+	<Sheet.Content side="right" class="md:min-w-[500px]">
+		<Sheet.Header>
+			<Sheet.Title>Notification</Sheet.Title>
+			<Sheet.Description>Received notifications</Sheet.Description>
+		</Sheet.Header>
+		<div class="mt-6 grid grid-flow-row gap-y-2">
+			{#each notifications as notification, i}
+				<NotificationCard data={notification} />
+				{#if i < notifications.length - 1}
+					<Divider />
+				{/if}
+			{/each}
+		</div>
+	</Sheet.Content>
+</Sheet.Root>

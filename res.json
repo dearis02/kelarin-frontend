@@ -1,32 +1,46 @@
 {
 	"status_code": 200,
 	"message": "OK",
-	"data": {
-		"id": "01954354-31b0-73d4-b35c-7456c69ae877",
-		"service_cost": "100000",
-		"service_start_date": "2025-03-01",
-		"service_end_date": "2025-03-07",
-		"service_start_time": "02:53:59",
-		"service_end_time": "05:56:59",
-		"service_time_time_zone": "Asia/Tokyo",
-		"has_pending_negotiation": false,
-		"created_at": "2025-02-27T01:35:46.096254+08:00",
-		"service": { "id": "01945f56-5651-7459-bab4-8d5f3438ce70", "name": "Service mesin AC" },
-		"service_provider": {
-			"id": "01945f56-5651-7459-bab4-8d5f3438ce70",
-			"name": "ARIS ",
-			"logo_url": "https://kelarin.s3.ap-southeast-3.amazonaws.com/service_provider/logo/1736766273_2f3ab033a43e444ce371694c282ae76e2df87a53?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIA3FLD3HOKAU2EI7UU%2F20250228%2Fap-southeast-3%2Fs3%2Faws4_request\u0026X-Amz-Date=20250228T082124Z\u0026X-Amz-Expires=900\u0026X-Amz-SignedHeaders=host\u0026x-id=GetObject\u0026X-Amz-Signature=83365deb7ec416727e40d1b4e12eba17ade1928f5e966593fa1c9ce0cc425cb8",
-			"received_rating_count": 0,
-			"received_rating_average": 0
+	"data": [
+		{
+			"id": "0195801f-c82a-74f1-8a06-a93c6ceb29a1",
+			"title": "Kadek Arista's order finished",
+			"message": "Order finished, the service fee automatically added to your credit",
+			"read": false,
+			"created_at": "2025-03-10T20:55:20.293978+08:00",
+			"metadata": { "order_id": "01956caa-557f-77e7-9d21-ddc1cc4490d5" }
 		},
-		"address": {
-			"id": "019541b4-1bfc-75fb-b38c-9474aecf4400",
-			"name": "Office 1",
-			"province": "Jawa Barat",
-			"city": "Bekasi",
-			"lat": -6.240250010485369,
-			"lng": 107.02349271771118,
-			"address": "ajwdna kwndkj awkd"
+		{
+			"id": "01957730-093d-7d9c-9c05-0d0b86c5a5f9",
+			"title": "Kadek Arista finished their payment for your service fee",
+			"message": "The service fee is currently on hold!",
+			"read": false,
+			"created_at": "2025-03-09T03:16:31.409738+08:00",
+			"metadata": { "order_id": "01956caa-557f-77e7-9d21-ddc1cc4490d5" }
+		},
+		{
+			"id": "019576fe-e4f5-79b4-b080-c6f78771ef18",
+			"title": "Kadek Arista finished their payment for your service fee",
+			"message": "The service fee is currently on hold!",
+			"read": false,
+			"created_at": "2025-03-09T02:22:50.697632+08:00",
+			"metadata": { "order_id": "01956caa-557f-77e7-9d21-ddc1cc4490d5" }
+		},
+		{
+			"id": "01956c2d-aac9-7c92-a1d1-477cfe22c4fe",
+			"title": "Kadek Arista sent you an offer",
+			"message": "You have received an offer. Check it now",
+			"read": false,
+			"created_at": "2025-03-06T23:58:07.049821+08:00",
+			"metadata": { "offer_id": "01956c2d-aac9-7c67-9dcc-ad8be90ccf46" }
+		},
+		{
+			"id": "01956a68-d1b3-76d2-a6c2-565a44a506e6",
+			"title": "Kadek Arista sent you an offer",
+			"message": "You have received an offer. Check it now",
+			"read": false,
+			"created_at": "2025-03-06T15:43:29.203443+08:00",
+			"metadata": { "offer_id": "01956a68-d1b3-769f-872e-06c65126a200" }
 		}
-	}
+	]
 }

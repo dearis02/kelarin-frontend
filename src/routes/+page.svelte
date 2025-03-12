@@ -109,7 +109,7 @@
 		<div class="relative order-1 basis-full lg:order-2 lg:flex-none">
 			<input
 				type="text"
-				class="w-full rounded-full border-2 border-primary bg-white px-7 py-4 focus:outline-primary md:min-h-11 lg:min-w-[460px]"
+				class="w-full rounded-full border-2 border-primary bg-white px-7 py-4 focus:outline-primary focus:ring-0 focus:ring-offset-0 md:min-h-11 lg:min-w-[460px]"
 				placeholder="Start your search"
 				bind:value={serviceFilter.keyword}
 			/>
