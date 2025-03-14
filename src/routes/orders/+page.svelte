@@ -3,17 +3,23 @@
 	import OrderSkeletonCard from '$lib/components/card/OrderSkeletonCard.svelte';
 	import PaymentMethodCard from '$lib/components/card/PaymentMethodCard.svelte';
 	import Dialog from '$lib/components/dialog/Dialog.svelte';
-	import { orderGetAllService } from '../../service/order';
-	import type { OrderGetAllRes } from '../../types/order';
+	import { orderGetAllService, orderGetByIDService } from '../../service/order';
+	import type { OrderGetAllRes, OrderGetByIDRes } from '../../types/order';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index';
 	import { paymentMethodGetAllService } from '../../service/payment_method';
 	import { PaymentMethodType, type PaymentMethodGetAllRes, type PaymentMethodGroupedByType } from '../../types/payment_method';
 	import { formatRupiah } from '$util/format_rupiah';
-	import { calculateAdminFee } from '$lib/utils';
+	import { calculateAdminFee, getLocalTimeZoneAbbreviation } from '$lib/utils';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { paymentCreateService } from '../../service/payment';
 	import { PaymentStatus, type PaymentCreateReq } from '../../types/payment';
 	import { LoaderCircle } from 'lucide-svelte';
+	import Icon from '@iconify/svelte';
+	import Divider from '$lib/components/Divider.svelte';
+	import dayjs from 'dayjs';
+	import PaymentStatusBadge from '$lib/components/badge/PaymentStatusBadge.svelte';
+	import { type CreateQueryResult } from '@tanstack/svelte-query';
+	import type { ApiResponse } from '../../types/api';
 
 	const PLATFORM_FEE = 5000;
 	let isLoading = $state(false);
@@ -21,6 +27,25 @@
 	let isCheckoutDialogOpen = $state(false);
 	let selectedOrder = $state<OrderGetAllRes>();
 	let selectedPaymentMethodID = $state('');
+	let orderDetailDialogOpen = $state(false);
+
+	let selectedOrderForDetail = $state<OrderGetAllRes>();
+	let order = $state<OrderGetByIDRes>();
+
+	let orderGetByIDSvc: CreateQueryResult<ApiResponse<OrderGetByIDRes>, Error>;
+
+	$effect(() => {
+		if (selectedOrderForDetail) {
+			orderGetByIDSvc = orderGetByIDService(selectedOrderForDetail.id);
+			$orderGetByIDSvc.refetch();
+
+			if ($orderGetByIDSvc.isSuccess) {
+				order = $orderGetByIDSvc.data.data;
+				orderDetailDialogOpen = true;
+			}
+		}
+	});
+
 	let adminFee = $derived.by(() => {
 		if (selectedOrder && selectedPaymentMethodID != '') {
 			const paymentMethod = paymentMethods.find((pm) => pm.id === selectedPaymentMethodID);
@@ -31,10 +56,19 @@
 			}
 		}
 	});
+
 	let totalFee = $derived.by(() => {
 		if (selectedOrder && adminFee) {
 			return Number(selectedOrder.service_fee) + adminFee + PLATFORM_FEE;
 		}
+	});
+
+	let orderDetailTotalFee = $derived.by(() => {
+		if (order && order.payment) {
+			return Number(order.service_fee) + order.payment.admin_fee + order.payment.platform_fee;
+		}
+
+		return order?.service_fee;
 	});
 
 	let groupedPaymentMethodByType = $state<PaymentMethodGroupedByType[]>([
@@ -105,9 +139,14 @@
 		$paymentCreateSvc.mutate(req);
 	}
 
+	function handleOnClickShowDetailOrder(order: OrderGetAllRes) {
+		selectedOrderForDetail = order;
+	}
+
 	$inspect(selectedOrder);
 	$inspect(adminFee);
 	$inspect(totalFee);
+	$inspect(order);
 </script>
 
 <div class="mt-14">
@@ -119,7 +158,7 @@
 			<OrderSkeletonCard />
 		{:else}
 			{#each orders as order}
-				<OrderCard data={order} onClickPayNow={orderCardHandleOnClickPayNow} />
+				<OrderCard data={order} onClickPayNow={orderCardHandleOnClickPayNow} onClickShowDetail={handleOnClickShowDetailOrder} />
 			{/each}
 		{/if}
 	</div>
@@ -192,5 +231,87 @@
 				</div>
 			</div>
 		</div>
+	{/snippet}
+</Dialog>
+
+<Dialog bind:isOpen={orderDetailDialogOpen} class="overflow-auto">
+	{#snippet body()}
+		{#if $orderGetByIDSvc.isLoading}
+			<div class="flex h-full items-center justify-center">
+				<LoaderCircle class="animate-spin" />
+			</div>
+		{:else}
+			<h1 class="text-center text-2xl font-semibold text-black">Order Detail</h1>
+			{#if order?.payment}
+				<div class="mt-5 flex items-center justify-center">
+					<PaymentStatusBadge status={order.payment.status} />
+				</div>
+			{/if}
+
+			<div class="mt-9 grid grid-flow-row gap-y-4 text-black">
+				<div>
+					<span class="text-lg font-semibold text-black">{order?.offer.service.name}</span>
+					<div class="flex items-center gap-x-3">
+						<img src={order?.offer.service_provider.logo_url} alt="provider-logo" class="size-10 rounded-full object-cover" />
+						<span>{order?.offer.service_provider.name}</span>
+					</div>
+				</div>
+				<div class="text-black">
+					<span class="text-lg font-semibold">Service Date :</span>
+					<div class="flex items-center gap-x-2">
+						<Icon icon="iconamoon:delivery-fast-fill" height="31" class="" />
+						<span class="text-base">{dayjs(order?.service_date).format('DD MMMM YYYY')}</span>
+					</div>
+				</div>
+				<div class="text-black">
+					<span class="text-lg font-semibold">Service Time :</span>
+					<div class="flex items-center gap-x-2">
+						<Icon icon="tabler:clock" height="30" />
+						<span class="text-base">{order?.service_time} {getLocalTimeZoneAbbreviation()}</span>
+					</div>
+				</div>
+				<div>
+					<span class="text-lg font-semibold">Detail</span>
+					<p class="text-justify">{order?.offer.detail}</p>
+				</div>
+			</div>
+			<Divider class="my-7" />
+			<div class="grid grid-flow-row gap-y-2 text-base text-black">
+				{#if order?.payment}
+					<div class="flex items-center justify-between">
+						<span class="text-secondary">Payment Method</span>
+						<img src={order?.payment.payment_method_logo_url} alt="" class="h-10 w-14 rounded-md object-fill" />
+					</div>
+				{/if}
+				<div class="flex items-center justify-between">
+					<span class="text-secondary">Service Fee</span>
+					<span>{formatRupiah(order?.service_fee ?? '0')}</span>
+				</div>
+				{#if order?.payment}
+					<div class="flex items-center justify-between">
+						<span class="text-secondary">Admin Fee</span>
+						<span>{formatRupiah(String(order.payment.admin_fee))}</span>
+					</div>
+					<div class="flex items-center justify-between">
+						<span class="text-secondary">Platform Fee</span>
+						<span>{formatRupiah(String(order.payment.platform_fee))}</span>
+					</div>
+				{/if}
+				<div class="mt-8 flex items-center justify-between text-xl">
+					<span class="font-semibold">Total</span>
+					<span class="font-semibold">{formatRupiah(String(orderDetailTotalFee ?? '0'))}</span>
+				</div>
+			</div>
+		{/if}
+	{/snippet}
+
+	{#snippet footer()}
+		<!-- show if paid -->
+		{#if !$orderGetByIDSvc.isLoading && !$orderGetByIDSvc.isPending && order?.payment?.status == PaymentStatus.PAID}
+			<div class="mb-4 flex w-full flex-col items-center gap-y-2">
+				<span class="text-[#FFC907]"> Show this QR Code after they finish their job! </span>
+				<Button class="w-full py-7 text-lg font-semibold">Show QR Code</Button>
+			</div>
+		{/if}
 	{/snippet}
 </Dialog>

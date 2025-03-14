@@ -17,6 +17,7 @@
 	import { initFirebaseMessaging, requestPermission } from '$util/firebase';
 	import { Toaster } from '$lib/components/ui/sonner/index';
 	import { toast } from 'svelte-sonner';
+	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools';
 
 	let { children } = $props();
 
@@ -129,6 +130,7 @@
 	</main>
 	<Footer />
 	<AlertDialog isOpen={alertDialog.open} title={alertDialog.title} message={alertDialog.message} />
+	<SvelteQueryDevtools />
 </QueryClientProvider>
 
 <Toaster />

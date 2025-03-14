@@ -10,9 +10,10 @@
 	type Props = {
 		data: OrderGetAllRes;
 		onClickPayNow: (order: OrderGetAllRes) => void;
+		onClickShowDetail: (order: OrderGetAllRes) => void;
 	};
 
-	let { data, onClickPayNow }: Props = $props();
+	let { data, onClickPayNow, onClickShowDetail }: Props = $props();
 	let amount = $derived(data.service_fee);
 </script>
 
@@ -40,13 +41,14 @@
 		</div>
 		<div class="mt-8 md:mt-0">
 			{#if data?.payment?.status == PaymentStatus.PENDING || data?.payment?.status == PaymentStatus.EXPIRED || !data.payment}
-				<Button class="w-full bg-yellow-500 font-medium hover:bg-opacity-90 md:w-fit" onclick={() => onClickPayNow(data)}>PAY NOW</Button>
+				<Button class="md:w-fi w-full bg-yellow-500 font-medium hover:bg-opacity-90" onclick={() => onClickPayNow(data)}>PAY NOW</Button>
 			{:else if data?.payment?.status == PaymentStatus.PAID || data.payment_fulfilled}
 				<div class="flex flex-col items-center">
 					<Icon icon="wpf:paid" height="50" class="text-center text-primary" />
 					<span class="text-gray-500">Payment Completed</span>
 				</div>
 			{/if}
+			<Button class="mt-4 w-full shadow shadow-border" variant="outline" onclick={() => onClickShowDetail(data)}>Detail</Button>
 		</div>
 	</div>
 	<button type="button" class="flex items-center justify-center gap-x-2 rounded-lg bg-primary px-3 py-2 font-semibold text-white md:hidden">

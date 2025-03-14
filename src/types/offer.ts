@@ -150,3 +150,10 @@ export interface OfferGetByIDResServiceProvider {
 	received_rating_count: number;
 	received_rating_average: number;
 }
+
+export enum OfferNegotiationStatus {
+	PENDING = 'pending',
+	ACCEPTED = 'accepted',
+	REJECTED = 'rejected',
+	CANCELED = 'canceled'
+}
