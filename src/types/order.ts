@@ -2,6 +2,12 @@ import type Decimal from 'decimal.js';
 import type { PaymentStatus } from './payment';
 import type { OfferNegotiationStatus } from './offer';
 
+export enum OrderStatus {
+	PENDING = 'pending',
+	ONGOING = 'ongoing',
+	FINISHED = 'finished'
+}
+
 export type OrderGetAllRes = {
 	id: string;
 	offer_id: string;
@@ -9,7 +15,7 @@ export type OrderGetAllRes = {
 	service_date: Date;
 	service_time: string;
 	payment_fulfilled: boolean;
-	status: string;
+	status: OrderStatus;
 	created_at: Date;
 	service: OrderGetAllResService;
 	service_provider: OrderGetAllResServiceProvider;
@@ -44,7 +50,7 @@ export interface OrderGetByIDRes {
 	service_date: Date;
 	service_time: string;
 	payment_fulfilled: boolean;
-	status: string;
+	status: OrderStatus;
 	created_at: Date;
 	offer: OrderGetByIDResOffer;
 	payment: OrderGetByIDResOfferPayment | null;
@@ -117,4 +123,5 @@ export type OrderGenerateQRCodeReq = {
 
 export type OrderGenerateQRCodeRes = {
 	qr_code_content: string;
+	valid_duration_in_second: number;
 };

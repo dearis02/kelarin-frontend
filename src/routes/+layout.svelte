@@ -133,4 +133,4 @@
 	<SvelteQueryDevtools />
 </QueryClientProvider>
 
-<Toaster />
+<Toaster richColors />

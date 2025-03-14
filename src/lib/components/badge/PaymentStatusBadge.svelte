@@ -13,16 +13,19 @@
 	$effect(() => {
 		switch (status) {
 			case PaymentStatus.PENDING:
-				colorByStatus = 'bg-yellow-500 text-yellow-800';
+				colorByStatus = 'bg-yellow-500 text-white';
 				break;
 			case PaymentStatus.PAID:
 				colorByStatus = 'bg-green-500 text-white';
 				break;
-			case (PaymentStatus.FAILED, PaymentStatus.CANCELED):
-				colorByStatus = 'bg-red-500 text-red-800';
+			case PaymentStatus.CANCELED:
+				colorByStatus = 'bg-red-500 text-white';
+				break;
+			case PaymentStatus.FAILED:
+				colorByStatus = 'bg-red-500 text-white';
 				break;
 			case PaymentStatus.EXPIRED:
-				colorByStatus = 'bg-gray-500 text-gray-800';
+				colorByStatus = 'bg-gray-500 text-white';
 				break;
 		}
 	});

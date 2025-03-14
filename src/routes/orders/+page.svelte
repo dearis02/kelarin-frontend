@@ -3,8 +3,8 @@
 	import OrderSkeletonCard from '$lib/components/card/OrderSkeletonCard.svelte';
 	import PaymentMethodCard from '$lib/components/card/PaymentMethodCard.svelte';
 	import Dialog from '$lib/components/dialog/Dialog.svelte';
-	import { orderGetAllService, orderGetByIDService } from '../../service/order';
-	import type { OrderGetAllRes, OrderGetByIDRes } from '../../types/order';
+	import { orderGenerateQRCodeService, orderGetAllService, orderGetByIDService } from '../../service/order';
+	import { OrderStatus, type OrderGenerateQRCodeRes, type OrderGetAllRes, type OrderGetByIDRes } from '../../types/order';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index';
 	import { paymentMethodGetAllService } from '../../service/payment_method';
 	import { PaymentMethodType, type PaymentMethodGetAllRes, type PaymentMethodGroupedByType } from '../../types/payment_method';
@@ -20,6 +20,8 @@
 	import PaymentStatusBadge from '$lib/components/badge/PaymentStatusBadge.svelte';
 	import { type CreateQueryResult } from '@tanstack/svelte-query';
 	import type { ApiResponse } from '../../types/api';
+	import { toast } from 'svelte-sonner';
+	import qrcode from 'qrcode-generator';
 
 	const PLATFORM_FEE = 5000;
 	let isLoading = $state(false);
@@ -28,6 +30,19 @@
 	let selectedOrder = $state<OrderGetAllRes>();
 	let selectedPaymentMethodID = $state('');
 	let orderDetailDialogOpen = $state(false);
+	let qrCodeDialogOpen = $state(false);
+	let qrDataURL = $state<string>('');
+	let qrValidDurationCounterInSecond = $state(0);
+
+	$effect(() => {
+		if (qrValidDurationCounterInSecond > 0) {
+			setInterval(() => {
+				if (qrValidDurationCounterInSecond > 0) {
+					qrValidDurationCounterInSecond = qrValidDurationCounterInSecond - 1;
+				}
+			}, 1000);
+		}
+	});
 
 	let selectedOrderForDetail = $state<OrderGetAllRes>();
 	let order = $state<OrderGetByIDRes>();
@@ -43,6 +58,29 @@
 				order = $orderGetByIDSvc.data.data;
 				orderDetailDialogOpen = true;
 			}
+		}
+	});
+
+	const orderGenerateQRCodeSvc = orderGenerateQRCodeService();
+
+	orderGenerateQRCodeSvc.subscribe((res) => {
+		if (res.isSuccess) {
+			const response = res.data.data;
+			qrValidDurationCounterInSecond = response.valid_duration_in_second;
+
+			const qr = qrcode(0, 'L');
+			qr.addData(response.qr_code_content);
+			qr.make();
+
+			qrDataURL = qr.createDataURL(10, 0);
+
+			orderDetailDialogOpen = false;
+			qrCodeDialogOpen = true;
+		}
+
+		if (res.isError) {
+			qrCodeDialogOpen = false;
+			toast.error('Failed to generate QR Code. Please try again later.', { position: 'top-right' });
 		}
 	});
 
@@ -140,7 +178,14 @@
 	}
 
 	function handleOnClickShowDetailOrder(order: OrderGetAllRes) {
+		orderDetailDialogOpen = true;
 		selectedOrderForDetail = order;
+	}
+
+	function handleShowQRCode() {
+		$orderGenerateQRCodeSvc.mutate({
+			order_id: order!.id
+		});
 	}
 
 	$inspect(selectedOrder);
@@ -307,11 +352,32 @@
 
 	{#snippet footer()}
 		<!-- show if paid -->
-		{#if !$orderGetByIDSvc.isLoading && !$orderGetByIDSvc.isPending && order?.payment?.status == PaymentStatus.PAID}
+		{#if !$orderGetByIDSvc.isLoading && !$orderGetByIDSvc.isPending && order?.payment?.status == PaymentStatus.PAID && order.status == OrderStatus.ONGOING}
 			<div class="mb-4 flex w-full flex-col items-center gap-y-2">
 				<span class="text-[#FFC907]"> Show this QR Code after they finish their job! </span>
-				<Button class="w-full py-7 text-lg font-semibold">Show QR Code</Button>
+				<Button class="w-full py-7 text-lg font-semibold" onclick={handleShowQRCode}>
+					{#if $orderGenerateQRCodeSvc.isPending}
+						<Icon icon="akar-icons:loading" class="animate-spin" />
+					{:else}
+						<span>Show QR Code</span>
+					{/if}
+				</Button>
+				<Button variant="outline" class="mt-4 w-full py-7 text-lg font-semibold" onclick={() => (orderDetailDialogOpen = false)}>Close</Button>
 			</div>
 		{/if}
+	{/snippet}
+</Dialog>
+
+<Dialog bind:isOpen={qrCodeDialogOpen} class="md:max-w-80">
+	{#snippet body()}
+		<img src={qrDataURL} alt="qr-code" class="mx-auto h-auto w-full max-w-60" />
+		{#if qrValidDurationCounterInSecond == 0}
+			<p class="mt-8 text-center text-black">QR Code Expired</p>
+		{:else}
+			<p class="mt-8 text-center text-black">This QR Code expires in <span class="font-semibold text-red-500">{qrValidDurationCounterInSecond}</span></p>
+		{/if}
+	{/snippet}
+	{#snippet footer()}
+		<Button class="w-full" variant="outline" onclick={() => (qrCodeDialogOpen = false)}>Close</Button>
 	{/snippet}
 </Dialog>
