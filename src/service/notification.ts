@@ -9,6 +9,6 @@ export function notificationGetAllService() {
 		queryFn: async () => {
 			return await api.get<NotificationGetAllRes[], ApiResponse<NotificationGetAllRes[]>>('/consumer/v1/notifications');
 		},
-		_defaulted: true
+		enabled: false
 	});
 }

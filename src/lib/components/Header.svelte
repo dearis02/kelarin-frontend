@@ -4,7 +4,7 @@
 	import { authUser, isLoggedIn, setAuthUser } from '../../store/auth';
 	import GoogleLoginButton from './button/GoogleLoginButton.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
-	import { clearToken, setLoginSession } from '../../service/auth';
+	import { clearToken, getToken, setLoginSession } from '../../service/auth';
 	import { COLOR_PRIMARY } from '../../types/color';
 	import Button from './ui/button/button.svelte';
 	import { onMount } from 'svelte';
@@ -71,6 +71,10 @@
 				}
 			}
 		});
+
+		if (getToken()) {
+			$notificationGetAllSvc.refetch();
+		}
 	});
 </script>
 
@@ -149,7 +153,7 @@
 			<Sheet.Title>Notification</Sheet.Title>
 			<Sheet.Description>Received notifications</Sheet.Description>
 		</Sheet.Header>
-		<div class="mt-6 grid grid-flow-row gap-y-2">
+		<div class="mt-6 grid h-[calc(100vh-10rem)] grid-flow-row gap-y-2 overflow-y-auto">
 			{#each notifications as notification, i}
 				<NotificationCard data={notification} />
 				{#if i < notifications.length - 1}

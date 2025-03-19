@@ -48,7 +48,7 @@ export async function initFirebaseMessaging(notifToast: string | number) {
 				imgURL: payload.notification?.image
 			},
 			id: notifToast,
-			duration: 5000,
+			duration: 10000,
 			position: 'top-center',
 			class: 'w-full'
 		});
