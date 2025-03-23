@@ -93,8 +93,8 @@
 		>
 			<span class="flex-grow cursor-pointer font-semibold">{$authUser?.name}</span>
 			<button onclick={onClickNotificationBtn} class="relative">
-				<div class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border bg-yellow-300">
-					<span class="text-sm text-black">{countUnreadNotification}</span>
+				<div class="absolute -right-1 -top-1 flex items-center justify-center rounded-full border bg-yellow-400 px-[2px] py-[1px]">
+					<span class="text-xs text-white">{countUnreadNotification}</span>
 				</div>
 				<Icon icon="basil:notification-solid" class="text-primary" height="30" />
 			</button>

@@ -14,15 +14,13 @@
 
 <div class="relative grid grid-rows-10 rounded-lg shadow-lg">
 	{#if service.received_rating_count > 0}
-		<div
-			class="absolute left-[10px] top-[10px] flex items-center gap-x-2 rounded-full border border-primary bg-secondary px-2 py-[5px]"
-		>
+		<div class="absolute left-[10px] top-[10px] flex items-center gap-x-2 rounded-full border border-primary bg-secondary px-2 py-[5px]">
 			<Star fill={COLOR_PRIMARY} strokeWidth="0" class="text-primary" />
 			<span class="font-semibold text-primary">{service.received_rating_average}</span>
 		</div>
 	{/if}
 	<a href={`/services/${service.id}`} class="row-span-7 cursor-pointer rounded-t-lg">
-		<img src={service.image_url} alt="service-img" class="h-full w-full object-cover" />
+		<img src={service.image_url} alt="service-img" class="h-full max-h-[300px] w-full object-cover" />
 	</a>
 	<div class="row-span-3 bg-white p-[14px]">
 		<div class="flex items-center gap-x-2">
@@ -34,10 +32,7 @@
 			<span class="line-clamp-2 text-[10px] text-[#717172]">
 				{service.address}
 			</span>
-			<div
-				class="ml-auto gap-x-1 overflow-hidden text-ellipsis text-nowrap"
-				style="line-height: 8px;"
-			>
+			<div class="ml-auto gap-x-1 overflow-hidden text-ellipsis text-nowrap" style="line-height: 8px;">
 				<MapPin class="inline-block basis-5 text-primary" size={16} />
 				<span class="inline text-xs uppercase">{service.province}</span>
 			</div>
