@@ -1,5 +1,5 @@
 import { createMutation, createQuery } from '@tanstack/svelte-query';
-import type { OfferCreateReq, OfferGetAllRes, OfferGetByIDRes } from '../types/offer';
+import type { OfferNegotiationAcceptOrRejectReq, OfferCreateReq, OfferGetAllRes, OfferGetByIDRes } from '../types/offer';
 import api from '$util/axios_interceptor';
 import type { ApiResponse } from '../types/api';
 
@@ -26,11 +26,24 @@ export function offerGetAllService() {
 	});
 }
 
-export function offerGetByIDService(id: string) {
+export function offerGetByIDService(id: () => string | undefined) {
 	return createQuery({
 		queryKey: ['offer.getByID', id],
 		queryFn: async () => {
-			return await api.get<OfferGetByIDRes, ApiResponse<OfferGetByIDRes>>(`/consumer/v1/offers/${id}`);
+			const res = await api.get<OfferGetByIDRes, ApiResponse<OfferGetByIDRes>>(`/consumer/v1/offers/${id()}`);
+			return res.data;
+		},
+		enabled: !!id()
+	});
+}
+
+export function offerAcceptOrRejectNegotiationService() {
+	return createMutation({
+		mutationKey: ['offer.acceptOrReject'],
+		mutationFn: async (req: OfferNegotiationAcceptOrRejectReq) => {
+			await api.post(`/consumer/v1/offer-negotiations/${req.offer_negotiation_id}`, {
+				action: req.action
+			});
 		}
 	});
 }

@@ -19,6 +19,6 @@ export function serviceGetAll(filter: ServiceGetAllFilter) {
 	});
 }
 
-export async function serviceGetByID(id: string) {
+export async function serviceGetByID(id: string | undefined) {
 	return await api.get<ServiceGetByIDRes, ApiResponse<ServiceGetByIDRes>>(`/v1/services/${id}`);
 }

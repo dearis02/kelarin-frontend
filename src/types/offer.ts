@@ -126,6 +126,7 @@ export interface OfferGetByIDRes {
 	service: OfferGetByIDResService;
 	service_provider: OfferGetByIDResServiceProvider;
 	address: OfferGetByIDResAddress;
+	negotiations: OfferGetByIDResNegotiation[];
 }
 
 export interface OfferGetByIDResAddress {
@@ -151,9 +152,22 @@ export interface OfferGetByIDResServiceProvider {
 	received_rating_average: number;
 }
 
+export interface OfferGetByIDResNegotiation {
+	id: string;
+	message: string;
+	requested_service_cost: string;
+	status: OfferNegotiationStatus;
+	created_at: Date;
+}
+
 export enum OfferNegotiationStatus {
 	PENDING = 'pending',
 	ACCEPTED = 'accepted',
 	REJECTED = 'rejected',
 	CANCELED = 'canceled'
 }
+
+export type OfferNegotiationAcceptOrRejectReq = {
+	offer_negotiation_id: string;
+	action: 'accept' | 'reject';
+};
