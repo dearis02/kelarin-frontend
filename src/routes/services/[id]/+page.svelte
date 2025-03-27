@@ -321,7 +321,7 @@
 					<span class="text-xl font-bold">{formatRupiahRange(service.fee_start_at, service.fee_end_at)} </span>
 				</div>
 				<Button class="col-span-full text-[16px] font-bold" onclick={() => (sendOfferFormDialogOpen = true)}>Send an Offer</Button>
-				<span class="text-start text-sm">Kelarin service fee</span>
+				<span class="text-start text-sm">Kelarin platform fee</span>
 				<span class="text-end text-sm">RP 5.000</span>
 				<div class="col-span-full h-[1px] w-full bg-primary"></div>
 				<span class="self-end text-sm font-medium">Total before taxes</span>
@@ -351,7 +351,7 @@
 						</Select.Group>
 					</Select.Content>
 				</Select.Root>
-				{#if errors.find((err) => err.field === 'address_id')}
+				{#if errors?.find((err) => err.field === 'address_id')}
 					<p class="absolute -bottom-6 text-sm text-red-500">{errors.find((err) => err.field === 'address_id')?.message}</p>
 				{/if}
 			</div>

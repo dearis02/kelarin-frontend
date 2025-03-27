@@ -3,6 +3,13 @@ import { formatRupiah } from '$util/format_rupiah';
 import type Decimal from 'decimal.js';
 import { z } from 'zod';
 
+export enum OfferStatus {
+	PENDING = 'pending',
+	ACCEPTED = 'accepted',
+	REJECTED = 'rejected',
+	CANCELED = 'canceled'
+}
+
 export type OfferCreateReq = {
 	service_id: string;
 	address_id: string;
@@ -95,6 +102,7 @@ export type OfferGetAllRes = {
 	service_end_time: string;
 	service_time_time_zone: string;
 	has_pending_negotiation: boolean;
+	status: OfferStatus;
 	created_at: Date;
 	service: OfferGetAllResService;
 	service_provider: OfferGetAllResServiceProvider;

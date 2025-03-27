@@ -4,7 +4,7 @@
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import '../app.css';
 	import { browser } from '$app/environment';
-	import { onMount, untrack, type ComponentType } from 'svelte';
+	import { onMount, tick, untrack, type ComponentType } from 'svelte';
 	import { setAuthUser, type AuthUser } from '../store/auth';
 	import { getToken, googleLoginService, isSessionExists, setLoginSession, setToken } from '../service/auth';
 	import { jwtDecode } from 'jwt-decode';
@@ -168,10 +168,15 @@
 	}
 
 	$effect(() => {
-		if (chat?.messages?.length && chatContainer && chatRoomOpen && outBoundMsgs) {
-			chatContainer.scrollTo({
-				top: chatContainer.scrollHeight,
-				behavior: 'instant'
+		if (chatRoomOpen || chat?.messages || outBoundMsgs) {
+			scrollToBottomChatContainer();
+		}
+	});
+
+	$effect(() => {
+		if (outBoundMsgs) {
+			tick().then(() => {
+				scrollToBottomChatContainer();
 			});
 		}
 	});
@@ -223,6 +228,12 @@
 
 	function setOutboundMsgsFailed(index: number, failed: boolean) {
 		outBoundMsgs[index].failed = failed;
+	}
+
+	function scrollToBottomChatContainer() {
+		if (chatContainer) {
+			chatContainer.scrollTop = chatContainer.scrollHeight;
+		}
 	}
 
 	function handleIncomingMessage(msg: WebSocketResponse<ChatWsIncoming>) {
@@ -285,26 +296,32 @@
 			case 'incoming_message':
 				if (incomingMsgData) {
 					if (chat?.room_id === incomingMsgData.room_id) {
-						chat.messages.push({
-							id: incomingMsgData.message_id,
-							content: incomingMsgData.content,
-							content_type: incomingMsgData.content_type,
-							created_at: incomingMsgData.created_at,
-							is_sender: false,
-							read: false
-						});
-					}
-
-					const chatRoom = chats.find((c) => c.room_id === incomingMsgData.room_id);
-
-					if (chatRoom) {
-						chatRoom.latest_message = {
-							id: incomingMsgData.message_id,
-							read: false,
-							content: incomingMsgData.content,
-							content_type: incomingMsgData.content_type,
-							created_at: incomingMsgData.created_at
-						};
+						if (outBoundMsgs.length) {
+							outBoundMsgs = [
+								...outBoundMsgs,
+								{
+									id: incomingMsgData.message_id,
+									content: incomingMsgData.content,
+									content_type: incomingMsgData.content_type,
+									failed: false,
+									is_sender: false,
+									is_sending: false,
+									created_at: incomingMsgData.created_at
+								}
+							];
+						} else {
+							chat.messages = [
+								...chat.messages,
+								{
+									id: incomingMsgData.message_id,
+									content: incomingMsgData.content,
+									content_type: incomingMsgData.content_type,
+									created_at: incomingMsgData.created_at,
+									is_sender: false,
+									read: false
+								}
+							];
+						}
 					}
 				}
 				break;
@@ -314,15 +331,18 @@
 	function handleSendMsg() {
 		if (ws && chatRoomOpen && chat && chatSendReq.content !== '' && failedCount < 3) {
 			const id = uuidV7();
-			outBoundMsgs.push({
-				id,
-				is_sending: true,
-				failed: false,
-				content: chatSendReq.content,
-				content_type: ChatContentType.TEXT,
-				is_sender: true,
-				created_at: dayjs().format()
-			});
+			outBoundMsgs = [
+				...outBoundMsgs,
+				{
+					id,
+					is_sending: true,
+					failed: false,
+					content: chatSendReq.content,
+					content_type: ChatContentType.TEXT,
+					is_sender: true,
+					created_at: dayjs().format()
+				}
+			];
 
 			chatSendReq.id = id;
 			chatSendReq.room_id = chat.room_id;
@@ -368,7 +388,8 @@
 	});
 
 	$inspect(chats);
-	$inspect(chat);
+	$inspect(chat?.messages);
+	$inspect(outBoundMsgs);
 </script>
 
 <QueryClientProvider client={queryClient}>
@@ -385,7 +406,7 @@
 	</main>
 	<Footer />
 	<AlertDialog isOpen={alertDialog.open} title={alertDialog.title} message={alertDialog.message} />
-	<SvelteQueryDevtools />
+	<!-- <SvelteQueryDevtools /> -->
 </QueryClientProvider>
 
 {#if tokenExists}
@@ -460,7 +481,7 @@
 										content: msg.content,
 										content_type: msg.content_type,
 										created_at: msg.created_at,
-										is_sender: true,
+										is_sender: msg.is_sender,
 										read: false
 									}}
 									previousChatSentAt={chat.messages[chat.messages.length - 1]?.created_at ?? outBoundMsgs[i - 1]?.created_at}

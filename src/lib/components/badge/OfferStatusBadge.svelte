@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { OfferNegotiationStatus } from '../../../types/offer';
+	import { OfferStatus } from '../../../types/offer';
 	import Badge from '../ui/badge/badge.svelte';
 
 	type Props = {
-		status: OfferNegotiationStatus;
+		status: OfferStatus;
 		class?: string;
 	};
 
@@ -13,13 +13,13 @@
 
 	$effect(() => {
 		switch (status) {
-			case OfferNegotiationStatus.PENDING:
+			case OfferStatus.PENDING:
 				classByStatus = 'bg-yellow-500 text-white hover:bg-opacity-90';
 				break;
-			case OfferNegotiationStatus.ACCEPTED:
+			case OfferStatus.ACCEPTED:
 				classByStatus = 'bg-green-500 text-white hover:bg-opacity-90';
 				break;
-			case OfferNegotiationStatus.REJECTED:
+			case OfferStatus.REJECTED:
 				classByStatus = 'bg-red-500 text-white hover:bg-opacity-90';
 				break;
 			default:

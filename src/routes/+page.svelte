@@ -133,7 +133,7 @@
 		</button>
 		<Popover.Root bind:open={categoryFilterComboboxOpen}>
 			<Popover.Content align="start" customAnchor={categoryFilterComboboxAnchor} bind:ref={categoryFilterComboboxContent}>
-				<Command.Root>
+				<Command.Root class="bg-white">
 					<Command.Input placeholder="Search category..." class="h-9" />
 					<Command.List>
 						<Command.Empty>Category not found</Command.Empty>
@@ -160,7 +160,13 @@
 	<!-- categories -->
 	<div class="hidden gap-x-3 overflow-x-auto text-nowrap py-4 font-bold lg:flex">
 		{#each data.serviceCategories as category}
-			<button class="cursor-pointer rounded-full bg-primary px-6 py-2 text-white shadow-md hover:bg-green-500" onclick={() => onSelectCategory(category.name)}>
+			<button
+				class={cn(
+					'cursor-pointer rounded-full bg-white px-6 py-2 text-primary shadow-md ring-1 ring-primary hover:bg-opacity-95',
+					serviceFilter.categories.includes(category.name) && 'bg-primary text-white'
+				)}
+				onclick={() => onSelectCategory(category.name)}
+			>
 				{category.name.toUpperCase()}
 			</button>
 		{/each}

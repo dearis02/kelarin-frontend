@@ -36,11 +36,15 @@
 
 	$effect(() => {
 		if (qrValidDurationCounterInSecond > 0) {
-			setInterval(() => {
+			const interval = setInterval(() => {
 				if (qrValidDurationCounterInSecond > 0) {
 					qrValidDurationCounterInSecond = qrValidDurationCounterInSecond - 1;
 				}
 			}, 1000);
+
+			return () => {
+				clearInterval(interval);
+			};
 		}
 	});
 
@@ -279,7 +283,7 @@
 	{/snippet}
 </Dialog>
 
-<Dialog bind:isOpen={orderDetailDialogOpen} class="overflow-auto">
+<Dialog bind:isOpen={orderDetailDialogOpen} class="overflow-auto" useDefaultFooter={false}>
 	{#snippet body()}
 		{#if $orderGetByIDSvc.isLoading}
 			<div class="flex h-full items-center justify-center">
@@ -362,9 +366,9 @@
 						<span>Show QR Code</span>
 					{/if}
 				</Button>
-				<Button variant="outline" class="mt-4 w-full py-7 text-lg font-semibold" onclick={() => (orderDetailDialogOpen = false)}>Close</Button>
 			</div>
 		{/if}
+		<Button variant="outline" class="w-full py-7 text-lg font-semibold" onclick={() => (orderDetailDialogOpen = false)}>Close</Button>
 	{/snippet}
 </Dialog>
 

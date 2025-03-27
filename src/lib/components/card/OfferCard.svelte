@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Calendar, Clock4, Clock7, HandHelping } from 'lucide-svelte';
 	import Button from '../ui/button/button.svelte';
-	import type { OfferGetAllRes } from '../../../types/offer';
+	import { OfferStatus, type OfferGetAllRes } from '../../../types/offer';
 	import dayjs from 'dayjs';
 	import { formatRupiah } from '$util/format_rupiah';
+	import OfferStatusBadge from '../badge/OfferStatusBadge.svelte';
 
 	type Props = {
 		data: OfferGetAllRes;
@@ -29,13 +30,13 @@
 	}
 </script>
 
-<div class="grid grid-flow-row place-content-between gap-y-2 rounded-md shadow-md">
-	<div>
+<div class="grid grid-flow-row content-between gap-y-2 rounded-md shadow-md">
+	<div class="w-full">
 		<img src={data.service.image_url} alt="offer-img" class="h-[300px] w-full rounded-t-md object-cover" loading="lazy" />
 		<div class="flex flex-col gap-y-4 p-5">
 			<div class="w-full">
 				<div class="flex items-center justify-between">
-					<h1 class="text-lg font-semibold">{data.service.name}</h1>
+					<h1 class="line-clamp-1 text-lg font-semibold">{data.service.name}</h1>
 					<div class="hidden items-center justify-between gap-x-2 text-center lg:flex">
 						<Clock4 color="#717172" />
 						<span>{dayjs(data.created_at).format('DD MMM YYYY HH:mm:ss')}</span>
@@ -45,6 +46,7 @@
 					<img src={data.service_provider.logo_url} alt="provider-pp" class="h-8 w-8 rounded-full object-fill" />
 					<span>{data.service_provider.name}</span>
 				</div>
+				<OfferStatusBadge class="mt-3 text-sm" status={data.status} />
 			</div>
 			<div class="grid grid-flow-row gap-y-2 py-4 lg:grid-cols-2">
 				<span class="text-[#717172]">Offered Cost</span>
@@ -67,7 +69,7 @@
 	</div>
 	<div class="p-5 text-center">
 		{#if data.has_pending_negotiation}
-			<span class="block"> Service provider service provider proposes negotiation </span>
+			<span class="block"> Service provider proposes negotiation </span>
 			<span class="font-medium text-primary"> SEE DETAIL! </span>
 		{/if}
 		<Button class="mt-3 w-full bg-accent text-white" onclick={onClickDetailButtonFn}>Detail</Button>

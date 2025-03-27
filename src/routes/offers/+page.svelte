@@ -230,7 +230,7 @@
 							<Accordion.Item value={n.id}>
 								<Accordion.Trigger class="no-underline hover:no-underline">
 									<div class="flex w-full items-center justify-between pr-4">
-										<span>{formatRupiah(n.requested_service_cost)}</span>
+										<span>Requested Service Fee <span class="font-semibold text-primary">{formatRupiah(n.requested_service_cost)}</span> </span>
 										<OfferNegotiationStatusBadge status={n.status} />
 									</div>
 								</Accordion.Trigger>
