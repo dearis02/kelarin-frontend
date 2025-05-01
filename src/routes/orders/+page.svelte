@@ -22,6 +22,12 @@
 	import type { ApiResponse } from '../../types/api';
 	import { toast } from 'svelte-sonner';
 	import qrcode from 'qrcode-generator';
+	import { generateInvoicePDF } from '$util/pdf';
+	import { onMount } from 'svelte';
+	import { getToken } from '../../service/auth';
+	import type { AuthDecodedAccessToken } from '../../types/auth';
+	import { jwtDecode } from 'jwt-decode';
+	import { getAuthUserFromDecodedToken } from '../../store/auth';
 
 	const PLATFORM_FEE = 5000;
 	let isLoading = $state(false);
@@ -196,6 +202,36 @@
 	$inspect(adminFee);
 	$inspect(totalFee);
 	$inspect(order);
+
+	function handleDownloadInvoice() {
+		if (!order) {
+			return;
+		}
+
+		const paymentStatus = order.payment?.status;
+
+		if (
+			order.payment === null ||
+			(order.payment && paymentStatus !== PaymentStatus.PENDING && paymentStatus !== PaymentStatus.PAID && paymentStatus !== PaymentStatus.EXPIRED)
+		) {
+			return;
+		}
+
+		generateInvoicePDF(order, userName);
+	}
+
+	let userName = '';
+	onMount(() => {
+		const token = getToken();
+		let decoded: AuthDecodedAccessToken;
+
+		if (token) {
+			decoded = jwtDecode(token.accessToken);
+			const authUser = getAuthUserFromDecodedToken(decoded);
+
+			userName = authUser.name;
+		}
+	});
 </script>
 
 <div class="mt-14">
@@ -368,7 +404,18 @@
 				</Button>
 			</div>
 		{/if}
-		<Button variant="outline" class="w-full py-7 text-lg font-semibold" onclick={() => (orderDetailDialogOpen = false)}>Close</Button>
+		{@const paymentStatus = order?.payment?.status}
+
+		{#if paymentStatus == PaymentStatus.EXPIRED}
+			<p class="text-amber-400">Your current payment is expired, please make a new payment!</p>
+		{/if}
+
+		<div class="mt-10 flex items-center justify-center gap-x-2">
+			{#if paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.EXPIRED || paymentStatus == PaymentStatus.PAID}
+				<Button class="w-full bg-black py-5 text-lg font-semibold text-white hover:bg-opacity-90" onclick={handleDownloadInvoice}>Download Invoice</Button>
+			{/if}
+			<Button variant="outline" class="w-full py-5 text-lg font-semibold" onclick={() => (orderDetailDialogOpen = false)}>Close</Button>
+		</div>
 	{/snippet}
 </Dialog>
 

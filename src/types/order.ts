@@ -107,6 +107,7 @@ export interface OrderGetByIDResOfferServiceServiceProvider {
 
 export interface OrderGetByIDResOfferPayment {
 	id: string;
+	reference: string;
 	payment_method_name: string;
 	payment_method_logo_url: string;
 	amount: string;
@@ -114,7 +115,9 @@ export interface OrderGetByIDResOfferPayment {
 	platform_fee: number;
 	status: PaymentStatus;
 	payment_link: string;
-	updated_at: Date | null;
+	expired_at: string;
+	created_at: string;
+	updated_at: string | null;
 }
 
 export type OrderGenerateQRCodeReq = {

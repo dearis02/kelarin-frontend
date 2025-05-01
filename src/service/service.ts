@@ -2,12 +2,19 @@ import api from '$util/axios_interceptor';
 import { createQuery } from '@tanstack/svelte-query';
 import type { ServiceGetAllFilter, ServiceGetAllRes, ServiceGetByIDRes } from '../types/service';
 import type { ApiResponse } from '../types/api';
+import qs from 'qs';
 
 export function serviceGetAll(filter: ServiceGetAllFilter) {
 	return createQuery({
 		queryKey: ['service.getAll', filter],
 		queryFn: async () => {
-			const res = await api.get<ServiceGetAllRes, ApiResponse<ServiceGetAllRes[]> & { metadata?: number }>('/v1/services', { params: filter });
+			const queryStrings = qs.stringify(filter, {
+				arrayFormat: 'repeat',
+				allowEmptyArrays: false,
+				encodeValuesOnly: true
+			});
+
+			const res = await api.get<ServiceGetAllRes, ApiResponse<ServiceGetAllRes[]> & { metadata?: number }>(`/v1/services?${queryStrings}`);
 
 			return res;
 		},

@@ -65,6 +65,8 @@ export async function requestPermission() {
 	if (permission === 'granted') {
 		try {
 			const token = await getToken(messaging, { vapidKey: PUBLIC_FIREBASE_VAPID_KEY });
+			console.log(token);
+
 			if (token) {
 				try {
 					await fcmTokenSaveService(token);
