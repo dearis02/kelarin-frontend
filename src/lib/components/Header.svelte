@@ -153,7 +153,7 @@
 			<Sheet.Title>Notification</Sheet.Title>
 			<Sheet.Description>Received notifications</Sheet.Description>
 		</Sheet.Header>
-		<div class="mt-6 grid h-[calc(100vh-10rem)] grid-flow-row gap-y-2 overflow-y-auto">
+		<div class="mt-6 grid h-[calc(100vh-10rem)] grid-flow-row content-start gap-y-2 overflow-y-auto">
 			{#each notifications as notification, i}
 				<NotificationCard data={notification} />
 				{#if i < notifications.length - 1}

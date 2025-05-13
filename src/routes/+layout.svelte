@@ -439,7 +439,7 @@
 			</Sheet.Header>
 			{#if !chatRoomOpen}
 				{#if wsConnectionOpened}
-					<div class="mt-6 grid h-[calc(100vh-6rem)] grid-flow-row place-items-start gap-y-4 overflow-y-auto">
+					<div class="mt-6 grid h-[calc(100vh-6rem)] grid-flow-row content-start gap-y-4 overflow-y-auto">
 						{#each chats as chat}
 							<ChatCard data={chat} onClick={() => openChatRoom(chat)} />
 						{/each}

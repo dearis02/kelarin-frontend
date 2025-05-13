@@ -18,8 +18,6 @@
 	import Divider from '$lib/components/Divider.svelte';
 	import dayjs from 'dayjs';
 	import PaymentStatusBadge from '$lib/components/badge/PaymentStatusBadge.svelte';
-	import { type CreateQueryResult } from '@tanstack/svelte-query';
-	import type { ApiResponse } from '../../types/api';
 	import { toast } from 'svelte-sonner';
 	import qrcode from 'qrcode-generator';
 	import { generateInvoicePDF } from '$util/pdf';
@@ -28,6 +26,11 @@
 	import type { AuthDecodedAccessToken } from '../../types/auth';
 	import { jwtDecode } from 'jwt-decode';
 	import { getAuthUserFromDecodedToken } from '../../store/auth';
+	import Star from '$lib/components/rate/Star.svelte';
+	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
+	import Label from '$lib/components/ui/label/label.svelte';
+	import { feedbackServiceCreate } from '../../service/feedback';
+	import type { ServiceFeedbackCreateReq } from '../../types/feedback';
 
 	const PLATFORM_FEE = 5000;
 	let isLoading = $state(false);
@@ -39,6 +42,13 @@
 	let qrCodeDialogOpen = $state(false);
 	let qrDataURL = $state<string>('');
 	let qrValidDurationCounterInSecond = $state(0);
+
+	let rateDialogOpen = $state(false);
+	let serviceFeedbackCreateReq = $state<ServiceFeedbackCreateReq>({
+		order_id: '',
+		rating: 0,
+		comment: ''
+	});
 
 	$effect(() => {
 		if (qrValidDurationCounterInSecond > 0) {
@@ -57,13 +67,10 @@
 	let selectedOrderForDetail = $state<OrderGetAllRes>();
 	let order = $state<OrderGetByIDRes>();
 
-	let orderGetByIDSvc: CreateQueryResult<ApiResponse<OrderGetByIDRes>, Error>;
+	const orderGetByIDSvc = orderGetByIDService(() => selectedOrderForDetail?.id ?? '');
 
 	$effect(() => {
 		if (selectedOrderForDetail) {
-			orderGetByIDSvc = orderGetByIDService(selectedOrderForDetail.id);
-			$orderGetByIDSvc.refetch();
-
 			if ($orderGetByIDSvc.isSuccess) {
 				order = $orderGetByIDSvc.data.data;
 				orderDetailDialogOpen = true;
@@ -198,10 +205,36 @@
 		});
 	}
 
-	$inspect(selectedOrder);
-	$inspect(adminFee);
-	$inspect(totalFee);
-	$inspect(order);
+	const feedbackService = feedbackServiceCreate();
+
+	feedbackService.subscribe((res) => {
+		if (res.isSuccess) {
+			if (order) {
+				order.rated = true;
+			}
+			toast.success('Thank you for your feedback!', { position: 'top-center' });
+			closeRateDialog();
+		}
+
+		if (res.isError) {
+			toast.error('Failed to submit feedback. Please try again later.', { position: 'top-center' });
+			closeRateDialog();
+		}
+	});
+
+	function onClickRateServiceBtn() {
+		rateDialogOpen = true;
+	}
+
+	function closeRateDialog() {
+		rateDialogOpen = false;
+	}
+
+	function onClickRateButton() {
+		serviceFeedbackCreateReq.order_id = order!.id;
+
+		$feedbackService.mutate(serviceFeedbackCreateReq);
+	}
 
 	function handleDownloadInvoice() {
 		if (!order) {
@@ -232,6 +265,11 @@
 			userName = authUser.name;
 		}
 	});
+
+	$inspect(selectedOrder);
+	$inspect(adminFee);
+	$inspect(totalFee);
+	$inspect(order);
 </script>
 
 <div class="mt-14">
@@ -321,7 +359,24 @@
 
 <Dialog bind:isOpen={orderDetailDialogOpen} class="overflow-auto" useDefaultFooter={false}>
 	{#snippet body()}
-		{#if $orderGetByIDSvc.isLoading}
+		{#if rateDialogOpen}
+			<h1 class="text-2xl font-semibold text-black">Rate</h1>
+			<h3 class="black text-lg">Are you happy with the service?</h3>
+			<div class="mt-5">
+				<span class="text-black">{order?.offer.service.name}</span>
+				<div class="flex items-center gap-x-3">
+					<img src={order?.offer.service_provider.logo_url} alt="provider-logo" class="size-10 rounded-full object-cover" />
+					<span>{order?.offer.service_provider.name}</span>
+				</div>
+			</div>
+			<div class="mt-3">
+				<Star onClick={(n) => (serviceFeedbackCreateReq.rating = n)} />
+			</div>
+			<div class="mt-6 flex flex-col gap-y-2">
+				<Label for="comment" class=" text-sm font-medium">Comment</Label>
+				<Textarea id="comment" bind:value={serviceFeedbackCreateReq.comment} />
+			</div>
+		{:else if $orderGetByIDSvc.isLoading}
 			<div class="flex h-full items-center justify-center">
 				<LoaderCircle class="animate-spin" />
 			</div>
@@ -391,31 +446,43 @@
 	{/snippet}
 
 	{#snippet footer()}
-		<!-- show if paid -->
-		{#if !$orderGetByIDSvc.isLoading && !$orderGetByIDSvc.isPending && order?.payment?.status == PaymentStatus.PAID && order.status == OrderStatus.ONGOING}
-			<div class="mb-4 flex w-full flex-col items-center gap-y-2">
-				<span class="text-[#FFC907]"> Show this QR Code after they finish their job! </span>
-				<Button class="w-full py-7 text-lg font-semibold" onclick={handleShowQRCode}>
-					{#if $orderGenerateQRCodeSvc.isPending}
-						<Icon icon="akar-icons:loading" class="animate-spin" />
-					{:else}
-						<span>Show QR Code</span>
-					{/if}
-				</Button>
+		{#if rateDialogOpen}
+			<div class="mt-10 flex items-center justify-end gap-x-2">
+				<Button class="w-fit" variant="outline" onclick={closeRateDialog} disabled={$feedbackService.isPending}>Back</Button>
+				<Button class="w-fit" onclick={onClickRateButton} disabled={$feedbackService.isPending}>Rate</Button>
+			</div>
+		{:else}
+			<!-- show if paid -->
+			{#if !$orderGetByIDSvc.isLoading && !$orderGetByIDSvc.isPending && order?.payment?.status == PaymentStatus.PAID && order.status == OrderStatus.ONGOING}
+				<div class="mb-4 flex w-full flex-col items-center gap-y-2">
+					<span class="text-[#FFC907]"> Show this QR Code after they finish their job! </span>
+					<Button class="w-full py-7 text-lg font-semibold" onclick={handleShowQRCode}>
+						{#if $orderGenerateQRCodeSvc.isPending}
+							<Icon icon="akar-icons:loading" class="animate-spin" />
+						{:else}
+							<span>Show QR Code</span>
+						{/if}
+					</Button>
+				</div>
+			{/if}
+			{@const paymentStatus = order?.payment?.status}
+
+			{#if paymentStatus == PaymentStatus.EXPIRED}
+				<p class="text-amber-400">Your current payment is expired, please make a new payment!</p>
+			{/if}
+
+			<div class="mt-10 flex items-center justify-center gap-x-2">
+				{#if paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.EXPIRED || paymentStatus == PaymentStatus.PAID}
+					<Button class="w-full bg-black py-5 text-lg font-semibold text-white hover:bg-opacity-85" onclick={handleDownloadInvoice}>Download Invoice</Button>
+				{/if}
+				{#if order?.status == OrderStatus.FINISHED && !order.rated}
+					<Button class="w-full bg-yellow-500 py-5 text-lg font-semibold text-white hover:bg-opacity-90" variant="outline" onclick={onClickRateServiceBtn}>
+						Rate Service
+					</Button>
+				{/if}
+				<Button variant="outline" class="w-full py-5 text-lg font-semibold" onclick={() => (orderDetailDialogOpen = false)}>Close</Button>
 			</div>
 		{/if}
-		{@const paymentStatus = order?.payment?.status}
-
-		{#if paymentStatus == PaymentStatus.EXPIRED}
-			<p class="text-amber-400">Your current payment is expired, please make a new payment!</p>
-		{/if}
-
-		<div class="mt-10 flex items-center justify-center gap-x-2">
-			{#if paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.EXPIRED || paymentStatus == PaymentStatus.PAID}
-				<Button class="w-full bg-black py-5 text-lg font-semibold text-white hover:bg-opacity-90" onclick={handleDownloadInvoice}>Download Invoice</Button>
-			{/if}
-			<Button variant="outline" class="w-full py-5 text-lg font-semibold" onclick={() => (orderDetailDialogOpen = false)}>Close</Button>
-		</div>
 	{/snippet}
 </Dialog>
 

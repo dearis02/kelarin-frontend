@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { OrderGetAllRes } from '../../../types/order';
+	import { OrderStatus, type OrderGetAllRes } from '../../../types/order';
 	import { formatRupiah } from '$util/format_rupiah';
 	import Button from '../ui/button/button.svelte';
 	import dayjs from 'dayjs';

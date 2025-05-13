@@ -51,6 +51,7 @@ export interface OrderGetByIDRes {
 	service_time: string;
 	payment_fulfilled: boolean;
 	status: OrderStatus;
+	rated: boolean;
 	created_at: Date;
 	offer: OrderGetByIDResOffer;
 	payment: OrderGetByIDResOfferPayment | null;

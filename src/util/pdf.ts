@@ -198,6 +198,10 @@ export function generateInvoicePDF(data: OrderGetByIDRes, userName: string = '')
 	}
 
 	const docDefinition: TDocumentDefinitions = {
+		info: {
+			title: 'invoice-' + data.payment?.reference
+		},
+		displayTitle: true,
 		footer: {
 			text: 'Kelarin',
 			color: '#2ECC70',
