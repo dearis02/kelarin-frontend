@@ -1,7 +1,7 @@
 import api from '$util/axios_interceptor';
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
 import type { ApiResponse } from '../types/api';
-import type { ChatCreateRoomReq, ChatCreateRoomRes, ChatGetAllRes, ChatGetByIDRes } from '../types/chat';
+import type { ChatCreateRoomReq, ChatCreateRoomRes, ChatGetAllRes, ChatGetByIDRes, ChatMarkReceivedMessagesAsSeenReq } from '../types/chat';
 
 export function chatGetAllService(queryClient: QueryClient) {
 	return createQuery(
@@ -38,4 +38,18 @@ export function chatCreateRoom() {
 			return res.data;
 		}
 	});
+}
+
+export function chatServiceMarkReceivedMessagesAsSeen(queryClient: QueryClient) {
+	return createMutation(
+		{
+			mutationFn: async (req: ChatMarkReceivedMessagesAsSeenReq) => {
+				const res = await api.put<void, ApiResponse<void>>(`/v1/chat-rooms/${req.room_id}/received-messages/_mark_as_seen`, {
+					chat_message_ids: req.chat_message_ids
+				});
+				return res.data;
+			}
+		},
+		queryClient
+	);
 }

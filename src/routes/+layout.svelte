@@ -21,7 +21,7 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import Icon from '@iconify/svelte';
 	import ChatCard from '$lib/components/card/ChatCard.svelte';
-	import { chatGetAllService, chatGetByRoomIDService } from '../service/chat';
+	import { chatGetAllService, chatGetByRoomIDService, chatServiceMarkReceivedMessagesAsSeen } from '../service/chat';
 	import {
 		ChatContentType,
 		ChatContext,
@@ -33,7 +33,7 @@
 		type ChatWsSendResMetadata
 	} from '../types/chat';
 	import ChatBubble from '$lib/components/chat/ChatBubble.svelte';
-	import { WebSocketResponseCode, type WebSocketResponse } from '../types/ws';
+	import { type WebSocketResponse } from '../types/ws';
 	import { cn, getLocalTimeZoneAbbreviation } from '$lib/utils';
 	import { v7 as uuidV7 } from 'uuid';
 	import dayjs from 'dayjs';
@@ -80,6 +80,7 @@
 	const googleLoginMutation = googleLoginService(queryClient, api);
 	const chatGetAllSvc = chatGetAllService(queryClient);
 	const chatGetByIDSvc = chatGetByRoomIDService(queryClient, () => selectedChat?.room_id ?? $selectedChatRoomID);
+	const markReceivedMessagesAsSeenSvc = chatServiceMarkReceivedMessagesAsSeen(queryClient);
 
 	chatGetAllSvc.subscribe((res) => {
 		if (res.isSuccess) {
@@ -90,6 +91,16 @@
 	chatGetByIDSvc.subscribe((res) => {
 		if (res.isSuccess) {
 			chat = res.data;
+		}
+	});
+
+	markReceivedMessagesAsSeenSvc.subscribe((res) => {
+		if (res.isSuccess) {
+			untrack(() => {
+				if (chat?.room_id) {
+					$chatGetByIDSvc.refetch();
+				}
+			});
 		}
 	});
 
@@ -176,6 +187,23 @@
 	$effect(() => {
 		if (chatRoomOpen || chat?.messages || outBoundMsgs) {
 			scrollToBottomChatContainer();
+		}
+	});
+
+	$effect(() => {
+		if (chatRoomOpen && chat?.room_id) {
+			untrack(() => {
+				if (!chat) return;
+
+				const unreadMessagesIds = chat.messages.filter((msg) => !msg.read && !msg.is_sender)?.map((msg) => msg.id);
+
+				if (unreadMessagesIds.length) {
+					$markReceivedMessagesAsSeenSvc.mutate({
+						room_id: chat.room_id,
+						chat_message_ids: unreadMessagesIds
+					});
+				}
+			});
 		}
 	});
 
@@ -465,26 +493,23 @@
 					<p>Connecting...</p>
 				{/if}
 			{:else if $chatRoomOpen && chat}
-				<div class="relative mt-6 grid h-[calc(100vh-7rem)] grid-flow-row content-between">
+				<div class="relative mt-6 grid h-[calc(100vh-10rem)] grid-rows-[auto_1fr_auto] content-start">
 					{#if chat.context === ChatContext.ORDER && chat.order && chat.service}
-						<div class="absolute left-0 right-0 top-0 grid grid-flow-row gap-y-3 bg-white px-4 py-2 shadow shadow-border">
+						<div class="left-0 right-0 top-0 grid grid-flow-row gap-y-3 bg-white px-4 py-2 shadow shadow-border">
 							<h1 class="line-clamp-1 font-medium">Service: {chat.service.name}</h1>
 							<p class="line-clamp-1">
 								{`${dayjs(chat.order.service_date).format('ddd, DD MMM YYYY')} - ${chat.order.service_time}  ${getLocalTimeZoneAbbreviation()}`}
 							</p>
 						</div>
 					{:else if chat.context === ChatContext.SERVICE && chat.service}
-						<div class="absolute left-0 right-0 top-0 grid grid-flow-row gap-y-3 bg-white px-4 py-2 shadow shadow-border">
+						<div class="left-0 right-0 top-0 grid grid-flow-row gap-y-3 bg-white px-4 py-2 shadow shadow-border">
 							<h1 class="line-clamp-1 font-medium">Service: {chat.service.name}</h1>
 						</div>
 					{/if}
 					{#if chat.messages?.length || outBoundMsgs?.length}
 						<div
 							class={cn(
-								"grid grid-flow-row gap-y-3 overflow-y-auto pb-4 pt-4 [-ms-overflow-style:'none'] [scrollbar-width:'none'] [&::-webkit-scrollbar]:hidden",
-								{
-									'pt-24': chat.context === ChatContext.ORDER
-								}
+								"grid grid-flow-row content-start gap-y-3 overflow-y-auto pb-4 pt-4 [-ms-overflow-style:'none'] [scrollbar-width:'none'] [&::-webkit-scrollbar]:hidden"
 							)}
 							bind:this={chatContainer}
 						>
@@ -511,28 +536,27 @@
 							<span>No messages</span>
 						</div>
 					{/if}
-
-					<div class="flex w-full items-center gap-x-2 place-self-end">
-						{#if failedCount < 3}
-							<input
-								type="text"
-								class="max-h flex h-fit max-h-[100px] w-full flex-grow rounded-md border border-input bg-white px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-								bind:value={chatSendReq.content}
-							/>
-						{:else}
-							<p class="flex-grow text-yellow-500">Failed to send message, try reloading the page!</p>
-						{/if}
-						<button
-							type="button"
-							class={cn('flex items-center justify-center rounded-full bg-primary p-2 transition-colors duration-500 focus-visible:outline-none', {
-								'bg-gray-600': chatSendReq.content === ''
-							})}
-							disabled={chatSendReq.content === '' || failedCount >= 3}
-							onclick={handleSendMsg}
-						>
-							<Icon icon="material-symbols:send-rounded" class="ml-[4px] text-white" height="30" />
-						</button>
-					</div>
+				</div>
+				<div class="flex w-full items-center gap-x-2">
+					{#if failedCount < 3}
+						<input
+							type="text"
+							class="max-h flex h-fit max-h-[100px] w-full flex-grow rounded-md border border-input bg-white px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+							bind:value={chatSendReq.content}
+						/>
+					{:else}
+						<p class="flex-grow text-yellow-500">Failed to send message, try reloading the page!</p>
+					{/if}
+					<button
+						type="button"
+						class={cn('flex items-center justify-center rounded-full bg-primary p-2 transition-colors duration-500 focus-visible:outline-none', {
+							'bg-gray-600': chatSendReq.content === ''
+						})}
+						disabled={chatSendReq.content === '' || failedCount >= 3}
+						onclick={handleSendMsg}
+					>
+						<Icon icon="material-symbols:send-rounded" class="ml-[4px] text-white" height="30" />
+					</button>
 				</div>
 			{/if}
 		</Sheet.Content>

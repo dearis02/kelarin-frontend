@@ -107,3 +107,8 @@ export type ChatCreateRoomReq = {
 export type ChatCreateRoomRes = {
 	room_id: string;
 };
+
+export type ChatMarkReceivedMessagesAsSeenReq = {
+	room_id: string;
+	chat_message_ids: string[];
+};

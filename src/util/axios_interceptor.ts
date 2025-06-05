@@ -1,6 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse, HttpStatusCode } from 'axios';
 import { env } from '$env/dynamic/public';
-import { authRenewSessionService, getToken, setLoginSession, setToken } from '../service/auth';
+import { authRenewSessionService, clearToken, getToken, setLoginSession, setToken } from '../service/auth';
 import { browser } from '$app/environment';
 import { error } from '@sveltejs/kit';
 
@@ -38,12 +38,16 @@ async function onError(err: CustomError): Promise<CustomError> {
 	const { config, response } = err;
 
 	if (config?.retry || (config?.url?.includes('/auth/refresh-token') ?? false)) {
-		// try {
-		// 	//TODO logout
-		// 	window.location.href = '/'
-		// } catch (e) {
-		// 	window.location.href = '/'
-		// }
+		if (browser) {
+			try {
+				setLoginSession(false);
+				clearToken();
+				window.location.href = '/login';
+			} catch (e) {
+				console.error(e);
+				window.location.href = '/login';
+			}
+		}
 
 		return Promise.reject(err);
 	}
@@ -53,7 +57,6 @@ async function onError(err: CustomError): Promise<CustomError> {
 
 		const t = getToken();
 		if (!t) {
-			window.location.href = '/';
 			return Promise.reject(error);
 		}
 
