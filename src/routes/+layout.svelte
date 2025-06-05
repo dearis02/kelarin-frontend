@@ -39,6 +39,7 @@
 	import dayjs from 'dayjs';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import { COLOR_PRIMARY } from '../types/color';
+	import { selectedChatRoomID, chatRoomOpen } from '../store/chat';
 
 	let { children } = $props();
 
@@ -51,7 +52,6 @@
 	let ws: WebSocket | undefined;
 
 	let chatSheetOpen = $state(false);
-	let chatRoomOpen = $state(false);
 	let chatContainer = $state<HTMLDivElement>();
 
 	const queryClient = new QueryClient({
@@ -79,7 +79,7 @@
 
 	const googleLoginMutation = googleLoginService(queryClient, api);
 	const chatGetAllSvc = chatGetAllService(queryClient);
-	const chatGetByIDSvc = chatGetByRoomIDService(queryClient, () => selectedChat?.room_id);
+	const chatGetByIDSvc = chatGetByRoomIDService(queryClient, () => selectedChat?.room_id ?? $selectedChatRoomID);
 
 	chatGetAllSvc.subscribe((res) => {
 		if (res.isSuccess) {
@@ -158,18 +158,34 @@
 		}
 	});
 
+	$effect(() => {
+		if (!chatSheetOpen) {
+			closeChatRoom();
+		}
+	});
+
 	function toggleChatSheet() {
 		chatSheetOpen = !chatSheetOpen;
 	}
 
 	function openChatRoom(chat: ChatGetAllRes) {
-		chatRoomOpen = true;
+		chatRoomOpen.set(true);
 		selectedChat = chat;
 	}
 
 	$effect(() => {
 		if (chatRoomOpen || chat?.messages || outBoundMsgs) {
 			scrollToBottomChatContainer();
+		}
+	});
+
+	$effect(() => {
+		if ($selectedChatRoomID) {
+			untrack(() => {
+				$chatGetByIDSvc.refetch();
+				toggleChatSheet();
+				chatRoomOpen.set(true);
+			});
 		}
 	});
 
@@ -184,8 +200,9 @@
 	function closeChatRoom() {
 		$chatGetAllSvc.refetch();
 		selectedChat = undefined;
+		selectedChatRoomID.set(undefined);
 		chat = undefined;
-		chatRoomOpen = false;
+		chatRoomOpen.set(false);
 		outBoundMsgs = [];
 	}
 
@@ -329,7 +346,7 @@
 	}
 
 	function handleSendMsg() {
-		if (ws && chatRoomOpen && chat && chatSendReq.content !== '' && failedCount < 3) {
+		if (ws && $chatRoomOpen && chat && chatSendReq.content !== '' && failedCount < 3) {
 			const id = uuidV7();
 			outBoundMsgs = [
 				...outBoundMsgs,
@@ -387,7 +404,7 @@
 		}
 	});
 
-	$inspect(chats);
+	$inspect('chats', chats);
 	$inspect(chat?.messages);
 	$inspect(outBoundMsgs);
 </script>
@@ -415,13 +432,13 @@
 			<Sheet.Header>
 				<Sheet.Title>
 					<div class="flex items-center gap-x-4">
-						{#if chatRoomOpen}
+						{#if $chatRoomOpen}
 							<button type="button" class="rounded-full bg-primary p-2 shadow-xl" onclick={closeChatRoom}>
 								<Icon icon="eva:arrow-back-outline" class="text-white" height="30" />
 							</button>
 							<div class="flex items-center gap-x-4 justify-self-start">
-								<img src={selectedChat?.service_provider.logo_url} class="h-12 w-12 rounded-full" alt="" loading="lazy" />
-								<span class="line-clamp-1 text-xl font-semibold">{selectedChat?.service_provider.name}</span>
+								<img src={chat?.service_provider?.logo_url} class="h-12 w-12 rounded-full" alt="" loading="lazy" />
+								<span class="line-clamp-1 text-xl font-semibold">{chat?.service_provider?.name}</span>
 							</div>
 							{#if chat?.context === ChatContext.ORDER}
 								<div class="ml-auto">
@@ -437,7 +454,7 @@
 					</div>
 				</Sheet.Title>
 			</Sheet.Header>
-			{#if !chatRoomOpen}
+			{#if !$chatRoomOpen}
 				{#if wsConnectionOpened}
 					<div class="mt-6 grid h-[calc(100vh-6rem)] grid-flow-row content-start gap-y-4 overflow-y-auto">
 						{#each chats as chat}
@@ -447,7 +464,7 @@
 				{:else}
 					<p>Connecting...</p>
 				{/if}
-			{:else if chatRoomOpen && chat}
+			{:else if $chatRoomOpen && chat}
 				<div class="relative mt-6 grid h-[calc(100vh-7rem)] grid-flow-row content-between">
 					{#if chat.context === ChatContext.ORDER && chat.order && chat.service}
 						<div class="absolute left-0 right-0 top-0 grid grid-flow-row gap-y-3 bg-white px-4 py-2 shadow shadow-border">

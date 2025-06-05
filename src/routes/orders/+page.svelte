@@ -4,7 +4,7 @@
 	import PaymentMethodCard from '$lib/components/card/PaymentMethodCard.svelte';
 	import Dialog from '$lib/components/dialog/Dialog.svelte';
 	import { orderGenerateQRCodeService, orderGetAllService, orderGetByIDService } from '../../service/order';
-	import { OrderStatus, type OrderGenerateQRCodeRes, type OrderGetAllRes, type OrderGetByIDRes } from '../../types/order';
+	import { OrderStatus, type OrderGetAllRes, type OrderGetByIDRes } from '../../types/order';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index';
 	import { paymentMethodGetAllService } from '../../service/payment_method';
 	import { PaymentMethodType, type PaymentMethodGetAllRes, type PaymentMethodGroupedByType } from '../../types/payment_method';
@@ -17,20 +17,20 @@
 	import Icon from '@iconify/svelte';
 	import Divider from '$lib/components/Divider.svelte';
 	import dayjs from 'dayjs';
-	import PaymentStatusBadge from '$lib/components/badge/PaymentStatusBadge.svelte';
 	import { toast } from 'svelte-sonner';
 	import qrcode from 'qrcode-generator';
 	import { generateInvoicePDF } from '$util/pdf';
-	import { onMount } from 'svelte';
-	import { getToken } from '../../service/auth';
-	import type { AuthDecodedAccessToken } from '../../types/auth';
-	import { jwtDecode } from 'jwt-decode';
-	import { getAuthUserFromDecodedToken } from '../../store/auth';
+	import { untrack } from 'svelte';
 	import Star from '$lib/components/rate/Star.svelte';
 	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { feedbackServiceCreate } from '../../service/feedback';
 	import type { ServiceFeedbackCreateReq } from '../../types/feedback';
+	import OrderStatusBadge from '$lib/components/badge/OrderStatusBadge.svelte';
+	import { selectedChatRoomID } from '$store/chat';
+	import { chatCreateRoom } from '../../service/chat';
+	import PaymentStatusBadge from '$lib/components/badge/PaymentStatusBadge.svelte';
+	import { authUser } from '../../store/auth';
 
 	const PLATFORM_FEE = 5000;
 	let isLoading = $state(false);
@@ -64,17 +64,26 @@
 		}
 	});
 
-	let selectedOrderForDetail = $state<OrderGetAllRes>();
+	let selectedOrderIDForDetail = $state<string>();
 	let order = $state<OrderGetByIDRes>();
 
-	const orderGetByIDSvc = orderGetByIDService(() => selectedOrderForDetail?.id ?? '');
+	const orderGetByIDSvc = orderGetByIDService(() => selectedOrderIDForDetail);
+
+	orderGetByIDSvc.subscribe((res) => {
+		if (res.isSuccess) {
+			order = res.data.data;
+		}
+
+		if (res.isError) {
+			toast.error('Failed to fetch order details. Please try again later.', { position: 'top-right' });
+		}
+	});
 
 	$effect(() => {
-		if (selectedOrderForDetail) {
-			if ($orderGetByIDSvc.isSuccess) {
-				order = $orderGetByIDSvc.data.data;
-				orderDetailDialogOpen = true;
-			}
+		if (selectedOrderIDForDetail) {
+			untrack(() => {
+				$orderGetByIDSvc.refetch();
+			});
 		}
 	});
 
@@ -196,7 +205,7 @@
 
 	function handleOnClickShowDetailOrder(order: OrderGetAllRes) {
 		orderDetailDialogOpen = true;
-		selectedOrderForDetail = order;
+		selectedOrderIDForDetail = order.id;
 	}
 
 	function handleShowQRCode() {
@@ -250,26 +259,31 @@
 			return;
 		}
 
-		generateInvoicePDF(order, userName);
+		generateInvoicePDF(order, $authUser?.name);
 	}
 
-	let userName = '';
-	onMount(() => {
-		const token = getToken();
-		let decoded: AuthDecodedAccessToken;
+	const chatSvcCreateRoom = chatCreateRoom();
 
-		if (token) {
-			decoded = jwtDecode(token.accessToken);
-			const authUser = getAuthUserFromDecodedToken(decoded);
+	chatSvcCreateRoom.subscribe((res) => {
+		if (res.isSuccess) {
+			selectedChatRoomID.set(res.data.room_id);
+		}
 
-			userName = authUser.name;
+		if (res.isError) {
+			toast.error('Failed to open chat room. Please try again later.', { position: 'top-right' });
 		}
 	});
 
-	$inspect(selectedOrder);
+	function onClickChatIcon(offerID: string) {
+		$chatSvcCreateRoom.mutate({
+			offer_id: offerID
+		});
+	}
+
 	$inspect(adminFee);
 	$inspect(totalFee);
-	$inspect(order);
+	$inspect(orderDetailDialogOpen);
+	$inspect('selectedOrderIDForDetail', selectedOrderIDForDetail);
 </script>
 
 <div class="mt-14">
@@ -281,7 +295,7 @@
 			<OrderSkeletonCard />
 		{:else}
 			{#each orders as order}
-				<OrderCard data={order} onClickPayNow={orderCardHandleOnClickPayNow} onClickShowDetail={handleOnClickShowDetailOrder} />
+				<OrderCard data={order} onClickPayNow={orderCardHandleOnClickPayNow} onClickShowDetail={handleOnClickShowDetailOrder} {onClickChatIcon} />
 			{/each}
 		{/if}
 	</div>
@@ -382,9 +396,9 @@
 			</div>
 		{:else}
 			<h1 class="text-center text-2xl font-semibold text-black">Order Detail</h1>
-			{#if order?.payment}
+			{#if order}
 				<div class="mt-5 flex items-center justify-center">
-					<PaymentStatusBadge status={order.payment.status} />
+					<OrderStatusBadge status={order.status} />
 				</div>
 			{/if}
 
@@ -419,8 +433,12 @@
 			<div class="grid grid-flow-row gap-y-2 text-base text-black">
 				{#if order?.payment}
 					<div class="flex items-center justify-between">
+						<span class="text-secondary">Payment Status</span>
+						<PaymentStatusBadge class="px-4 py-1" status={order.payment.status} />
+					</div>
+					<div class="flex items-center justify-between">
 						<span class="text-secondary">Payment Method</span>
-						<img src={order?.payment.payment_method_logo_url} alt="" class="h-10 w-14 rounded-md object-fill" />
+						<img src={order?.payment.payment_method_logo} alt="" class="h-10 w-14 rounded-md object-fill" />
 					</div>
 				{/if}
 				<div class="flex items-center justify-between">
@@ -471,7 +489,7 @@
 				<p class="text-amber-400">Your current payment is expired, please make a new payment!</p>
 			{/if}
 
-			<div class="mt-10 flex items-center justify-center gap-x-2">
+			<div class="mt-4 flex items-center justify-center gap-x-2">
 				{#if paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.EXPIRED || paymentStatus == PaymentStatus.PAID}
 					<Button class="w-full bg-black py-5 text-lg font-semibold text-white hover:bg-opacity-85" onclick={handleDownloadInvoice}>Download Invoice</Button>
 				{/if}

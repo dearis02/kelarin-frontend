@@ -5,7 +5,8 @@ import type { OfferNegotiationStatus } from './offer';
 export enum OrderStatus {
 	PENDING = 'pending',
 	ONGOING = 'ongoing',
-	FINISHED = 'finished'
+	FINISHED = 'finished',
+	EXPIRED = 'expired'
 }
 
 export type OrderGetAllRes = {
@@ -110,7 +111,7 @@ export interface OrderGetByIDResOfferPayment {
 	id: string;
 	reference: string;
 	payment_method_name: string;
-	payment_method_logo_url: string;
+	payment_method_logo: string;
 	amount: string;
 	admin_fee: number;
 	platform_fee: number;

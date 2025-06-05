@@ -14,11 +14,11 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			$components: './src/components',
-			$stores: './src/stores',
+			$store: './src/store',
 			$util: './src/util',
 			$globalCSS: './src/app.css',
-			$assets: './src/lib/assets',
-		},
+			$assets: './src/lib/assets'
+		}
 	}
 };
 

@@ -175,7 +175,7 @@
 
 <Dialog bind:isOpen={addressFormDialogOpen} class="max-h-[800px] overflow-auto">
 	{#snippet body()}
-		<h1 class="text-xl font-medium">Add New Address</h1>
+		<h1 class="text-xl font-medium">{isEditAction ? 'Edit Address' : 'Add New Address'}</h1>
 		<form class="mt-10 grid grid-cols-1 gap-6 gap-x-5 lg:grid-cols-2 lg:gap-y-8">
 			<InputField type="text" label="Name" name="name" {errors} bind:value={addressForm.name} class="col-span-full focus:border-none" />
 			<Map

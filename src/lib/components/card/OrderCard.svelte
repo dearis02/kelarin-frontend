@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { OrderStatus, type OrderGetAllRes } from '../../../types/order';
+	import { type OrderGetAllRes } from '../../../types/order';
 	import { formatRupiah } from '$util/format_rupiah';
 	import Button from '../ui/button/button.svelte';
 	import dayjs from 'dayjs';
@@ -11,9 +11,10 @@
 		data: OrderGetAllRes;
 		onClickPayNow: (order: OrderGetAllRes) => void;
 		onClickShowDetail: (order: OrderGetAllRes) => void;
+		onClickChatIcon: (offerID: string) => void;
 	};
 
-	let { data, onClickPayNow, onClickShowDetail }: Props = $props();
+	let { data, onClickPayNow, onClickShowDetail, onClickChatIcon }: Props = $props();
 	let amount = $derived(data.service_fee);
 </script>
 
@@ -21,7 +22,11 @@
 	<div class="flex flex-col justify-between gap-y-2 md:flex-row md:items-center">
 		<div class="flex flex-col items-start gap-x-4 md:flex-row">
 			<h1 class="text-2xl font-semibold">{data.service.name}</h1>
-			<button type="button" class="hidden items-center gap-x-2 rounded-lg bg-primary px-3 py-2 font-semibold text-white md:flex">
+			<button
+				type="button"
+				class="hidden items-center gap-x-2 rounded-lg bg-primary px-3 py-2 font-semibold text-white md:flex"
+				onclick={() => onClickChatIcon(data.offer_id)}
+			>
 				<Icon icon="fluent:chat-48-filled" height="35" />
 				<span>Chat</span>
 			</button>

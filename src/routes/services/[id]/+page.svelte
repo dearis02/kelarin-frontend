@@ -34,6 +34,8 @@
 	import { addressGetAllService } from '../../../service/address';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { AxiosError, HttpStatusCode } from 'axios';
+	import { chatCreateRoom } from '../../../service/chat';
+	import { selectedChatRoomID } from '$store/chat';
 
 	let props: PageProps = $props();
 	let { service } = props.data;
@@ -65,6 +67,7 @@
 
 	const sendOfferService = offerSendService();
 	const getAllAddressService = addressGetAllService();
+	const chatServiceCreateRoom = chatCreateRoom();
 
 	const selectedAddress = $derived.by(() => {
 		const address = $getAllAddressService.data?.find((a) => a.id == sendOfferForm.address_id);
@@ -143,6 +146,18 @@
 			service_start_time: '',
 			service_end_time: ''
 		};
+	}
+
+	chatServiceCreateRoom.subscribe((res) => {
+		if (res.isSuccess) {
+			$selectedChatRoomID = res.data.room_id;
+		}
+	});
+
+	function openChatRoom() {
+		$chatServiceCreateRoom.mutate({
+			service_id: service.id
+		});
 	}
 
 	$effect(() => {
@@ -272,7 +287,10 @@
 							</div>
 							<p class="text-gray-500">Joined since {formatDate(service.service_provider.joined_at)}</p>
 						</div>
-						<button class="col-span-full hidden h-16 w-16 items-center justify-center rounded-full bg-primary shadow-lg sm:col-auto sm:flex">
+						<button
+							class="col-span-full hidden h-16 w-16 items-center justify-center rounded-full bg-primary shadow-lg sm:col-auto sm:flex"
+							onclick={openChatRoom}
+						>
 							<MessageCircleMore class="text-white" size="38" />
 						</button>
 						<Button class="col-span-full w-full sm:hidden">Chat Now</Button>

@@ -12,13 +12,13 @@ export function orderGetAllService() {
 	});
 }
 
-export function orderGetByIDService(id: () => string) {
+export function orderGetByIDService(id: () => string | undefined) {
 	return createQuery({
-		queryKey: ['order.getByID', id],
+		queryKey: ['order.getByID', id()],
 		queryFn: async () => {
 			return await api.get<OrderGetByIDRes, ApiResponse<OrderGetByIDRes>>(`/consumer/v1/orders/${id()}`);
 		},
-		enabled: true
+		enabled: false
 	});
 }
 

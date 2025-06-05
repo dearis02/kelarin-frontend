@@ -98,3 +98,12 @@ export type ChatOutboundMessage = {
 	content_type: ChatContentType;
 	created_at: string;
 };
+
+export type ChatCreateRoomReq = {
+	service_id?: string;
+	offer_id?: string;
+};
+
+export type ChatCreateRoomRes = {
+	room_id: string;
+};

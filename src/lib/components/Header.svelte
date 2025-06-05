@@ -82,7 +82,9 @@
 	bind:this={headerRef}
 	class="fixed z-50 flex w-full flex-row justify-between border-[0.5px] border-primary bg-white px-8 py-5 md:p-10 xl:px-[110px] xl:py-10"
 >
-	<enhanced:img src={kelarinLogo} class="h-auto max-w-32 cursor-pointer md:max-w-40" alt="kelarin logo" onclick={() => goto('/')} />
+	<button onclick={() => goto('/')}>
+		<enhanced:img src={kelarinLogo} class="h-auto max-w-32 cursor-pointer md:max-w-40" alt="kelarin logo" />
+	</button>
 	<button type="button" class="md:hidden" onclick={onClickMobileMenu}>
 		<Menu class="text-primary" />
 	</button>
@@ -113,7 +115,6 @@
 							<DropdownMenu.Item onclick={() => goto('/addresses')}>Address</DropdownMenu.Item>
 							<DropdownMenu.Item onclick={() => goto('/offers')}>Offers</DropdownMenu.Item>
 							<DropdownMenu.Item onclick={() => goto('/orders')}>Orders</DropdownMenu.Item>
-							<DropdownMenu.Item>Payments</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item class="cursor-pointer text-red-500" onclick={handleLogout}>Log out</DropdownMenu.Item>
