@@ -11,10 +11,15 @@
 	import { goto } from '$app/navigation';
 	import Icon from '@iconify/svelte';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
-	import { notificationGetAllService } from '../../service/notification';
 	import type { NotificationGetAllRes } from '../../types/notification';
 	import NotificationCard from './card/NotificationCard.svelte';
 	import Divider from './Divider.svelte';
+
+	type Props = {
+		notifications: NotificationGetAllRes[];
+	};
+
+	let { notifications }: Props = $props();
 
 	let dropdownMenuOpen = $state(false);
 	let dropdownMenuAnchor = $state<HTMLElement>();
@@ -23,16 +28,8 @@
 
 	let headerRef = $state<HTMLElement>();
 
-	let notifications = $state<NotificationGetAllRes[]>([]);
 	let countUnreadNotification = $derived.by(() => {
 		return notifications.filter((n) => !n.read).length;
-	});
-
-	const notificationGetAllSvc = notificationGetAllService();
-	notificationGetAllSvc.subscribe((res) => {
-		if (res.isSuccess) {
-			notifications = res.data.data;
-		}
 	});
 
 	function onClickNotificationBtn() {
@@ -71,10 +68,6 @@
 				}
 			}
 		});
-
-		if (getToken()) {
-			$notificationGetAllSvc.refetch();
-		}
 	});
 </script>
 

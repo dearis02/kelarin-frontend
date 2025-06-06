@@ -1,5 +1,5 @@
 import { createMutation, QueryClient } from '@tanstack/svelte-query';
-import type { AxiosInstance } from 'axios';
+import { type AxiosInstance } from 'axios';
 import {
 	ACCESS_TOKEN_KEY,
 	REFRESH_TOKEN_KEY,
@@ -14,11 +14,11 @@ import api from '$util/axios_interceptor';
 import type { ApiResponse } from '../types/api';
 
 export function googleLoginService(queryClient: QueryClient, api: AxiosInstance) {
-	return createMutation<AuthLoginRes, Error, AuthLoginReq>(
+	return createMutation(
 		{
 			mutationKey: ['googleLogin'],
 			mutationFn: async (req: AuthLoginReq) => {
-				const res = await api.post<AuthLoginRes>('/consumer/v1/auth/_google_login', req);
+				const res = await api.post<AuthLoginRes, ApiResponse<AuthLoginRes>>('/consumer/v1/auth/_google_login', req);
 				return res.data;
 			}
 		},

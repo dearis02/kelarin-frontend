@@ -7,8 +7,14 @@ export interface AuthUser {
 	name: string;
 }
 
+export type LoginRequiredAlert = {
+	message?: string;
+	open: boolean;
+};
+
 const authUser = writable<AuthUser | null>(null);
 const isLoggedIn = writable<boolean>(false);
+const loginRequiredAlert = writable<LoginRequiredAlert>({ open: false });
 
 export function setAuthUser(user: AuthUser | null): void {
 	authUser.set(user);
@@ -22,4 +28,4 @@ export function getAuthUserFromDecodedToken(decoded: AuthDecodedAccessToken): Au
 	};
 }
 
-export { authUser, isLoggedIn };
+export { authUser, isLoggedIn, loginRequiredAlert };

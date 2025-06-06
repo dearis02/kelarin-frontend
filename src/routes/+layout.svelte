@@ -5,14 +5,14 @@
 	import '../app.css';
 	import { browser } from '$app/environment';
 	import { onMount, tick, untrack, type ComponentType } from 'svelte';
-	import { setAuthUser, type AuthUser } from '../store/auth';
+	import { loginRequiredAlert, setAuthUser, type AuthUser } from '../store/auth';
 	import { getToken, googleLoginService, isSessionExists, setLoginSession, setToken } from '../service/auth';
 	import { jwtDecode } from 'jwt-decode';
 	import type { AuthDecodedAccessToken } from '../types/auth';
 	import { PUBLIC_GOOGLE_CLIENT_ID, PUBLIC_WEB_SOCKET_URL } from '$env/static/public';
 	import api from '$util/axios_interceptor';
 	import AlertDialog from '$lib/components/dialog/AlertDialog.svelte';
-	import { AxiosError, HttpStatusCode } from 'axios';
+	import { Axios, AxiosError, HttpStatusCode } from 'axios';
 	import { isGSIClientLoaded } from '../store/google';
 	import { initFirebaseMessaging, requestPermission } from '$util/firebase';
 	import { Toaster } from '$lib/components/ui/sonner/index';
@@ -40,6 +40,9 @@
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import { COLOR_PRIMARY } from '../types/color';
 	import { selectedChatRoomID, chatRoomOpen } from '../store/chat';
+	import { isHttpError } from '@sveltejs/kit';
+	import { notificationGetAllService } from '../service/notification';
+	import type { NotificationGetAllRes } from '../types/notification';
 
 	let { children } = $props();
 
@@ -64,6 +67,8 @@
 		}
 	});
 
+	let notifications = $state<NotificationGetAllRes[]>([]);
+
 	let chats = $state<ChatGetAllRes[]>([]);
 	let selectedChat = $state<ChatGetAllRes>();
 	let chat = $state<ChatGetByIDRes>();
@@ -81,6 +86,14 @@
 	const chatGetAllSvc = chatGetAllService(queryClient);
 	const chatGetByIDSvc = chatGetByRoomIDService(queryClient, () => selectedChat?.room_id ?? $selectedChatRoomID);
 	const markReceivedMessagesAsSeenSvc = chatServiceMarkReceivedMessagesAsSeen(queryClient);
+	const notificationSvcGetAll = notificationGetAllService(queryClient);
+
+	notificationSvcGetAll.subscribe((res) => {
+		if (res.isSuccess) {
+			notifications = res.data.data;
+			$notificationSvcGetAll.refetch();
+		}
+	});
 
 	chatGetAllSvc.subscribe((res) => {
 		if (res.isSuccess) {
@@ -118,24 +131,6 @@
 		}
 	}
 
-	function handleOnGoogleLoginError(err: Error) {
-		alertDialog.open = true;
-
-		alertDialog.title = 'Login Failed';
-		if (err instanceof AxiosError) {
-			console.error(err);
-
-			if (err.response?.status === HttpStatusCode.Forbidden || err.response?.status === HttpStatusCode.Unauthorized) {
-				alertDialog.message = err.response.data?.message;
-			} else {
-				alertDialog.message = 'Something went wrong, try again later!';
-			}
-		} else {
-			alertDialog.message = 'Something went wrong, try again later!';
-			console.error(err);
-		}
-	}
-
 	googleLoginMutation.subscribe((res) => {
 		if (res.isSuccess) {
 			setToken(res.data.access_token, res.data.refresh_token);
@@ -150,7 +145,22 @@
 		}
 
 		if (res.isError) {
-			handleOnGoogleLoginError(res.error);
+			alertDialog.open = true;
+
+			alertDialog.title = 'Login Failed';
+			const err = res.error;
+			if (err instanceof AxiosError) {
+				console.error(res.error);
+
+				if (err.response?.status === HttpStatusCode.Forbidden || err.response?.status === HttpStatusCode.Unauthorized) {
+					alertDialog.message = err.response.data?.message;
+				} else {
+					alertDialog.message = 'Something went wrong, try again later!';
+				}
+			} else {
+				console.error(err);
+				alertDialog.message = 'Something went wrong, try again later!';
+			}
 		}
 	});
 
@@ -226,7 +236,9 @@
 	});
 
 	function closeChatRoom() {
-		$chatGetAllSvc.refetch();
+		if (tokenExists) {
+			$chatGetAllSvc.refetch();
+		}
 		selectedChat = undefined;
 		selectedChatRoomID.set(undefined);
 		chat = undefined;
@@ -234,33 +246,45 @@
 		outBoundMsgs = [];
 	}
 
-	function initWebSocketConnection(token: string): void {
-		ws = new WebSocket(`${PUBLIC_WEB_SOCKET_URL}/v1/web-socket/chat?token=${token}`);
-		ws.binaryType = 'arraybuffer';
+	function initWebSocketConnection(): string {
+		let accToken = '';
 
-		ws.onopen = (e) => {
-			wsConnectionOpened = true;
-		};
+		if (browser) {
+			const token = getToken();
+			if (token) {
+				accToken = token.accessToken;
+			}
 
-		ws.onmessage = (event) => {
-			const msg: WebSocketResponse<ChatWsIncoming> = decodeAndParseMessageToJSON(event.data);
+			ws = new WebSocket(`${PUBLIC_WEB_SOCKET_URL}/v1/web-socket/chat?token=${accToken}`);
+			ws.binaryType = 'arraybuffer';
 
-			if (msg.data) handleIncomingMessage(msg);
-			if (msg.type === 'incoming_message' && msg.data?.room_id !== selectedChat?.room_id) $chatGetAllSvc.refetch();
-		};
+			ws.onopen = (e) => {
+				wsConnectionOpened = true;
+			};
 
-		ws.onclose = (e) => {
-			console.info('Connection closed');
-			wsConnectionOpened = false;
+			ws.onmessage = (event) => {
+				const msg: WebSocketResponse<ChatWsIncoming> = decodeAndParseMessageToJSON(event.data);
 
-			if (e.code === 1000 || e.code === 1001) return;
+				if (msg.data) handleIncomingMessage(msg);
+				if (msg.type === 'incoming_message' && msg.data?.room_id !== selectedChat?.room_id) $chatGetAllSvc.refetch();
+			};
 
-			console.error('Connection closed with error:', e.reason);
-		};
+			ws.onclose = (e) => {
+				console.info('Connection closed');
+				wsConnectionOpened = false;
 
-		ws.onerror = (e) => {
-			console.error('Connection error:', e);
-		};
+				if (e.code === 1000 || e.code === 1001) return;
+
+				console.error('Connection closed with error:', e.reason);
+			};
+
+			ws.onerror = (e) => {
+				console.error('Connection error:', e);
+				return e.type;
+			};
+		}
+
+		return '';
 	}
 
 	const textDecoder = new TextDecoder();
@@ -402,7 +426,7 @@
 	}
 
 	let tokenExists = $state(false);
-
+	let accToken = '';
 	onMount(async () => {
 		const script = document.createElement('script');
 		script.src = 'https://accounts.google.com/gsi/client';
@@ -413,6 +437,7 @@
 		const accessToken = getToken()?.accessToken;
 		if (accessToken) {
 			tokenExists = true;
+			accToken = accessToken;
 
 			setLoginSession(true);
 			const claims = jwtDecode<AuthDecodedAccessToken>(accessToken);
@@ -426,9 +451,18 @@
 			await initFirebaseMessaging(notifToast);
 			await requestPermission();
 
-			initWebSocketConnection(accessToken);
+			let initWebSocketErrCount = 0;
+			let err = initWebSocketConnection();
+			if (err == 'error') {
+				initWebSocketErrCount++;
+				while (initWebSocketErrCount < 3 && !wsConnectionOpened) {
+					await new Promise((resolve) => setTimeout(resolve, 2000));
+					err = initWebSocketConnection();
+					initWebSocketErrCount++;
+				}
+			}
 
-			$chatGetAllSvc.refetch();
+			$notificationSvcGetAll.refetch();
 		}
 	});
 
@@ -438,7 +472,7 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-	<Header />
+	<Header {notifications} />
 	<main class="relative min-h-screen pt-10">
 		<div class="container py-[50px]">
 			{@render children()}
@@ -564,3 +598,11 @@
 {/if}
 
 <Toaster richColors />
+
+<!-- Login required alert -->
+<AlertDialog
+	isOpen={$loginRequiredAlert.open}
+	title="Login Required"
+	message={$loginRequiredAlert.message ?? 'Login required to do this action'}
+	messageClass="text-yellow-500 text-base"
+/>

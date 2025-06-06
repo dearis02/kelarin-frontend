@@ -5,6 +5,7 @@
 		isOpen: boolean;
 		title: string;
 		message: string;
+		messageClass?: string;
 	};
 
 	let { isOpen = $bindable(), ...props }: Props = $props();
@@ -14,7 +15,7 @@
 	<AlertDialog.Content>
 		<AlertDialog.Header>
 			<AlertDialog.Title>{props.title}</AlertDialog.Title>
-			<AlertDialog.Description>
+			<AlertDialog.Description class={props.messageClass}>
 				{props.message}
 			</AlertDialog.Description>
 		</AlertDialog.Header>

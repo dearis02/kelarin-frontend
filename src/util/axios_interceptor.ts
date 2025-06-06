@@ -36,28 +36,30 @@ function onResponse(response: AxiosResponse): AxiosResponse {
 
 async function onError(err: CustomError): Promise<CustomError> {
 	const { config, response } = err;
+	console.log('Axios Error:', err);
 
-	if (config?.retry || (config?.url?.includes('/auth/refresh-token') ?? false)) {
+	if (config?.retry || (config?.url?.includes('/auth/_renew_session') ?? false)) {
 		if (browser) {
 			try {
 				setLoginSession(false);
 				clearToken();
-				window.location.href = '/login';
+				window.location.href = '/';
 			} catch (e) {
 				console.error(e);
-				window.location.href = '/login';
+				window.location.href = '/';
 			}
 		}
 
 		return Promise.reject(err);
 	}
 
-	if (response?.status === HttpStatusCode.Unauthorized && !(config?.url?.includes('/auth/refresh-token') ?? false)) {
+	if (response?.status === HttpStatusCode.Unauthorized && !(config?.url?.includes('/auth/_renew_session') ?? false)) {
 		config.retry = true;
 
 		const t = getToken();
 		if (!t) {
-			return Promise.reject(error);
+			// window.location.href = '/';
+			return Promise.reject(err);
 		}
 
 		try {

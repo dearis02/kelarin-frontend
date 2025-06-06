@@ -36,6 +36,8 @@
 	import { AxiosError, HttpStatusCode } from 'axios';
 	import { chatCreateRoom } from '../../../service/chat';
 	import { selectedChatRoomID } from '$store/chat';
+	import { authUser, isLoggedIn, loginRequiredAlert } from '$store/auth';
+	import { getToken } from '../../../service/auth';
 
 	let props: PageProps = $props();
 	let { service } = props.data;
@@ -122,6 +124,15 @@
 			year: 'numeric',
 			month: 'long'
 		});
+	}
+
+	function openSendOfferDialog() {
+		if (!$isLoggedIn || !getToken()) {
+			loginRequiredAlert.set({ open: true, message: 'Login required to send an offer' });
+			return;
+		}
+
+		sendOfferFormDialogOpen = true;
 	}
 
 	function onSendOfferFormSubmit() {
@@ -338,7 +349,7 @@
 					<span class="mb-1 block text-[#898989]">Fee</span>
 					<span class="text-xl font-bold">{formatRupiahRange(service.fee_start_at, service.fee_end_at)} </span>
 				</div>
-				<Button class="col-span-full text-[16px] font-bold" onclick={() => (sendOfferFormDialogOpen = true)}>Send an Offer</Button>
+				<Button class="col-span-full text-[16px] font-bold" onclick={openSendOfferDialog}>Send an Offer</Button>
 				<span class="text-start text-sm">Kelarin platform fee</span>
 				<span class="text-end text-sm">RP 5.000</span>
 				<div class="col-span-full h-[1px] w-full bg-primary"></div>
