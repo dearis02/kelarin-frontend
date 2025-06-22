@@ -7,7 +7,7 @@ on:
 
 env:
   SSH_KEY_FILE_NAME: kelarin.pem
-  APP_DIR: kelarin/app/staging
+  APP_DIR: kelarin/app/staging/consumer
   COMPRESSED_ARTIFACT_FILE_NAME: build.zip
   ARTIFACT_NAME: build-artifact
   ECOSYSTEM_CONFIG_FILE: ecosystem.staging.config.js
