@@ -5,12 +5,12 @@ export const apps = [
 		cwd: './',
 		env: {
 			HOST: '127.0.0.1',
-			PORT: 3100
+			PORT: 4100
 		},
 		log_type: 'json',
 		time: true,
-		out_file: '~/logs/kelarin-consumer-staging.log',
-		error_file: '~/logs/kelarin-consumer-staging.error.log',
+		out_file: `${process.env.HOME}/logs/kelarin-consumer-staging.log`,
+		error_file: `${process.env.HOME}/logs/kelarin-consumer-staging.error.log`,
 		kill_timeout: 5000
 	}
 ];

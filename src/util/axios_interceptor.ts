@@ -1,12 +1,11 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse, HttpStatusCode } from 'axios';
-import { env } from '$env/dynamic/public';
+import { PUBLIC_API_BASE_URL } from '$env/static/public';
 import { authRenewSessionService, clearToken, getToken, setLoginSession, setToken } from '../service/auth';
 import { browser } from '$app/environment';
 import { error } from '@sveltejs/kit';
 
-const baseURL = env.PUBLIC_API_BASE_URL;
 const instance = axios.create({
-	baseURL: baseURL
+	baseURL: PUBLIC_API_BASE_URL
 });
 
 interface CustomAxiosReqConfig extends InternalAxiosRequestConfig {
