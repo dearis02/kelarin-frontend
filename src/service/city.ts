@@ -16,9 +16,7 @@ export function cityGetAllByProvinceID(provinceID?: BigNumber) {
 				};
 			}
 
-			return await api.get<CityGetAllByProvinceIDRes, ApiResponse<CityGetAllByProvinceIDRes[]>>(
-				`/common/v1/cities?province_id=${provinceID}`
-			);
+			return await api.get<CityGetAllByProvinceIDRes, ApiResponse<CityGetAllByProvinceIDRes[]>>(`/common/v1/cities?province_id=${provinceID}`);
 		},
 		initialData: {
 			status_code: 200,

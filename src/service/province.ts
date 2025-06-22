@@ -7,9 +7,7 @@ export function provinceGetAll() {
 	return createQuery({
 		queryKey: ['province.getAll'],
 		queryFn: async () => {
-			return await api.get<ProvinceGetAllRes, ApiResponse<ProvinceGetAllRes[]>>(
-				'/common/v1/provinces'
-			);
+			return await api.get<ProvinceGetAllRes, ApiResponse<ProvinceGetAllRes[]>>('/common/v1/provinces');
 		},
 		initialData: {
 			status_code: 200,

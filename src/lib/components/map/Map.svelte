@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { PUBLIC_MAP_BOX_ACCESS_TOKEN } from '$env/static/public';
 	import { cn } from '$lib/utils';
-	import { CloudCog } from 'lucide-svelte';
 	import * as mapbox from 'mapbox-gl';
 	import 'mapbox-gl/dist/mapbox-gl.css';
 	import { onDestroy, onMount } from 'svelte';
