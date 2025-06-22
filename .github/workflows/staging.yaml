@@ -15,6 +15,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    environment: STAGING
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -23,7 +24,7 @@ jobs:
         with:
           node-version: 22
       - name: Extract environment variables
-        run: echo "${{ secrets.STAGING_ENV_VARS }}" > .env
+        run: echo "${{ secrets.ENV_VARS }}" > .env
       - name: Install dependencies
         run: npm install
       - name: Build App
@@ -39,12 +40,13 @@ jobs:
 
   deploy:
     runs-on: ubuntu-24.04
+    environment: STAGING
     needs: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Extract environment variables
-        run: echo "${{ secrets.STAGING_ENV_VARS }}" > .env
+        run: echo "${{ secrets.ENV_VARS }}" > .env
       - name: Store SSH key
         run: echo "${{ secrets.SSH_KEY_CONTENT }}" > ${{ env.SSH_KEY_FILE_NAME }}
       - name: Change SSH key permission
@@ -76,5 +78,6 @@ jobs:
             source ~/.nvm/nvm.sh
             source ~/.profile
             cd /home/${{ secrets.SSH_USERNAME }}/${{ env.APP_DIR }}
+            npm install --omit=dev
             pm2 reload ecosystem.staging.config.js
             pm2 save
