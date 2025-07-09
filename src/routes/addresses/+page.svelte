@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index';
 	import Dialog from '$lib/components/dialog/Dialog.svelte';
-	import { addressCreateService, addressGetAllService, addressUpdateService } from '../../service/address';
+	import { NewAddressService } from '../../service/address';
 	import {
 		createAddressValidationSchema,
 		updateAddressValidationSchema,
@@ -20,6 +20,7 @@
 	import { LoaderCircle } from 'lucide-svelte';
 	import { transformZodError } from '$util/error';
 	import { toast } from 'svelte-sonner';
+	import { NewAddressRepository } from '../../repository/address';
 
 	let addresses = $state<AddressGetAllRes[]>([]);
 	let selectedAddress = $state<AddressGetAllRes>();
@@ -38,9 +39,12 @@
 	});
 	let isEditAction = $state(false);
 
-	const getAllAddress = addressGetAllService();
-	const createAddress = addressCreateService();
-	const updateAddress = addressUpdateService();
+	const addressRepo = NewAddressRepository();
+	const addressService = NewAddressService(addressRepo);
+
+	const getAllAddress = addressService.getAll();
+	const createAddress = addressService.create();
+	const updateAddress = addressService.update();
 
 	getAllAddress.subscribe((res) => {
 		if (res.isSuccess) {

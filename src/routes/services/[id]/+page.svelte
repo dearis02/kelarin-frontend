@@ -31,16 +31,27 @@
 	import { transformZodError } from '$util/error';
 	import InputField from '$lib/components/form/InputField.svelte';
 	import TextArea from '$lib/components/form/TextArea.svelte';
-	import { addressGetAllService } from '../../../service/address';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { AxiosError, HttpStatusCode } from 'axios';
 	import { chatCreateRoom } from '../../../service/chat';
 	import { selectedChatRoomID } from '$store/chat';
-	import { authUser, isLoggedIn, loginRequiredAlert } from '$store/auth';
+	import { isLoggedIn, loginRequiredAlert } from '$store/auth';
 	import { getToken } from '../../../service/auth';
+	import { NewAddressRepository } from '../../../repository/address';
+	import { NewAddressService } from '../../../service/address';
+	import { NewServiceFeedbackRepository } from '../../../repository/service_feedback';
+	import { NewServiceFeedbackService } from '../../../service/service_feedback';
+	import type { ServiceFeedbackGetAllRes } from '../../../types/service_feedback';
+	import ServiceFeedback from '$lib/components/feedback/ServiceFeedback.svelte';
 
 	let props: PageProps = $props();
 	let { service } = props.data;
+
+	const addressRepo = NewAddressRepository();
+	const serviceFeedbackRepo = NewServiceFeedbackRepository();
+
+	const addressService = NewAddressService(addressRepo);
+	const serviceFeedbackService = NewServiceFeedbackService(serviceFeedbackRepo);
 
 	service.delivery_methods = service.delivery_methods.map((m) => m.charAt(0).toUpperCase() + m.slice(1));
 
@@ -66,10 +77,12 @@
 		service_end_time: ''
 	});
 	let errors = $state<ValidationError[]>([]);
+	let feedbacks = $state<ServiceFeedbackGetAllRes[]>([]);
 
 	const sendOfferService = offerSendService();
-	const getAllAddressService = addressGetAllService();
+	const getAllAddressService = addressService.getAll();
 	const chatServiceCreateRoom = chatCreateRoom();
+	const serviceFeedbackGetAllSvc = serviceFeedbackService.getAll(service.id);
 
 	const selectedAddress = $derived.by(() => {
 		const address = $getAllAddressService.data?.find((a) => a.id == sendOfferForm.address_id);
@@ -102,6 +115,14 @@
 			} else {
 				alertDialogOpen = true;
 			}
+		}
+	});
+
+	serviceFeedbackGetAllSvc.subscribe((res) => {
+		if (res.isSuccess) {
+			feedbacks = res.data;
+		} else if (res.isError) {
+			console.error('Failed to fetch service feedbacks:', res.error);
 		}
 	});
 
@@ -329,6 +350,24 @@
 						<Phone fill={COLOR_PRIMARY} size="20" strokeWidth="0" />
 						<span>{service.service_provider.telephone != '' ? service.service_provider.telephone : '-'}</span>
 					</div>
+				</div>
+			</div>
+			<div class="mt-32">
+				<h1 class="mb-4 text-lg">User Feedbacks</h1>
+				<div class="grid max-h-[400px] grid-flow-row gap-y-6 overflow-y-auto">
+					{#each feedbacks as feedback}
+						<ServiceFeedback
+							data={{
+								id: feedback.id,
+								userName: feedback.user_name,
+								rating: feedback.rating,
+								comment: feedback.comment,
+								createdAt: feedback.created_at
+							}}
+						/>
+					{:else}
+						<p class="text-gray-500">No feedbacks for this service yet.</p>
+					{/each}
 				</div>
 			</div>
 		</div>
