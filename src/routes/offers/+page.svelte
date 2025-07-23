@@ -86,8 +86,8 @@
 			const serviceStartDate = parseDate(offer.service_start_date);
 			const serviceEndDate = parseDate(offer.service_end_date);
 			untrack(() => {
-				calendarDates = [];
-				generateDateRange(serviceStartDate, serviceEndDate);
+				// calendarDates = [];
+				// generateDateRange(serviceStartDate, serviceEndDate);
 
 				serviceDateRange.start = serviceStartDate;
 				serviceDateRange.end = serviceEndDate;
@@ -118,6 +118,7 @@
 	$inspect($getAllOffer.data.data);
 	$inspect(offer);
 	$inspect(calendarDates);
+	$inspect(serviceDateRange);
 </script>
 
 <div class="mt-4 md:mt-20">
@@ -193,7 +194,9 @@
 					</div>
 					<Divider />
 					<!-- <Calendar type="single" class="rounded-md border bg-primary text-white shadow" weekdayFormat="long" {isSelected} readonly /> -->
-					<RangeCalendar bind:value={serviceDateRange} class="mx-auto w-fit rounded-md border shadow" disabled readonly />
+					{#key serviceDateRange.start}
+						<RangeCalendar bind:value={serviceDateRange} class="mx-auto w-fit rounded-md border shadow" disabled readonly />
+					{/key}
 					<div class="flex w-fit items-center gap-x-3 rounded-md bg-primary px-4 py-3 text-white">
 						<Icon icon="tabler:clock" height="38" />
 						<span class="font-bold">{`${offer?.service_start_time} - ${offer?.service_end_time} ${offerTimeZoneAbbv}`}</span>

@@ -43,6 +43,8 @@
 	import { NewServiceFeedbackService } from '../../../service/service_feedback';
 	import type { ServiceFeedbackGetAllRes } from '../../../types/service_feedback';
 	import ServiceFeedback from '$lib/components/feedback/ServiceFeedback.svelte';
+	import DatePicker from '$lib/components/DatePicker.svelte';
+	import type { DateValue } from '@internationalized/date';
 
 	let props: PageProps = $props();
 	let { service } = props.data;
@@ -76,6 +78,8 @@
 		service_start_time: '',
 		service_end_time: ''
 	});
+	let startDate = $state<DateValue | undefined>();
+	let endDate = $state<DateValue | undefined>();
 	let errors = $state<ValidationError[]>([]);
 	let feedbacks = $state<ServiceFeedbackGetAllRes[]>([]);
 
@@ -436,15 +440,26 @@
 				/>
 				<p class="absolute -bottom-6 right-0 text-end text-sm font-bold text-primary">Min cost {formatRupiah(service.fee_start_at)}</p>
 			</div>
-			<InputField
-				type="date"
+			<DatePicker
 				label="Service Start Date"
 				name="service_start_date"
 				{errors}
-				bind:value={sendOfferForm.service_start_date}
+				bind:value={startDate}
+				class="focus:border-none"
+				onValueChange={ (d) => {
+					sendOfferForm.service_start_date = d.toString();
+				}}
+			/>
+			<DatePicker
+				label="Service End Date"
+				name="service_end_date"
+				{errors}
+				bind:value={endDate}
+				onValueChange={ (d) => {
+					sendOfferForm.service_end_date = d.toString();
+				}}
 				class="focus:border-none"
 			/>
-			<InputField type="date" label="Service End Date" name="service_end_date" {errors} bind:value={sendOfferForm.service_end_date} class="focus:border-none" />
 			<InputField
 				type="time"
 				label="Service Start Time"

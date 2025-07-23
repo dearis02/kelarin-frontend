@@ -128,6 +128,12 @@
 		errors = [];
 	}
 
+	function onClickAddButton() {
+		addressFormDialogOpen = true;
+		isEditAction = false;
+		resetForm();
+	}
+
 	function onClickEditBtn(a: AddressGetAllRes) {
 		addressFormDialogOpen = true;
 		isEditAction = true;
@@ -147,10 +153,7 @@
 
 	<Button
 		class="ml-auto mt-10"
-		onclick={() => {
-			isEditAction = false;
-			addressFormDialogOpen = true;
-		}}>Add New</Button
+		onclick={onClickAddButton}>Add New</Button
 	>
 	<div class="mt-4 grid grid-flow-row gap-y-5">
 		{#if $getAllAddress.isPending || $getAllAddress.isLoading}

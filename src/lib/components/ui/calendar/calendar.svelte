@@ -42,7 +42,7 @@ get along, so we shut typescript up by casting `value` to `never`.
 							<Calendar.GridRow class="mt-2 w-full">
 								{#each weekDates as date}
 									<Calendar.Cell {date} month={month.value}>
-										<Calendar.Day data-selected={restProps.isSelected?.(date) ? '' : undefined} />
+										<Calendar.Day data-selected={restProps.isSelected?.(date) ? '' : undefined} class="hover:bg-primary hover:text-white" />
 									</Calendar.Cell>
 								{/each}
 							</Calendar.GridRow>
