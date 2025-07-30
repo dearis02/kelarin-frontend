@@ -19,7 +19,7 @@
 			<span class="font-semibold text-primary">{service.received_rating_average}</span>
 		</div>
 	{/if}
-	<a href={`/services/${service.id}`} class="row-span-7 cursor-pointer rounded-t-lg">
+	<a href={`/services/${service.id}`} class="row-span-7 cursor-pointer rounded-t-lg" data-sveltekit-preload-data="tap">
 		<img src={service.image_url} alt="service-img" class="h-full max-h-[300px] w-full object-cover" />
 	</a>
 	<div class="row-span-3 bg-white p-[14px]">
