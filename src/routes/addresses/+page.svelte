@@ -35,7 +35,7 @@
 		lng: null,
 		province: '',
 		city: '',
-		address: ''
+		detail: ''
 	});
 	let isEditAction = $state(false);
 
@@ -123,7 +123,7 @@
 			lng: null,
 			province: '',
 			city: '',
-			address: ''
+			detail: ''
 		};
 		errors = [];
 	}
@@ -195,7 +195,7 @@
 			/>
 			<InputField type="text" label="Province" name="province" {errors} bind:value={addressForm.province} class="focus:border-none" />
 			<InputField type="text" label="City" name="city" {errors} bind:value={addressForm.city} class="focus:border-none" />
-			<TextArea label="Address" name="address" {errors} bind:value={addressForm.address} class="col-span-full focus:border-none" />
+			<TextArea label="Detail" name="detail" {errors} bind:value={addressForm.detail} class="col-span-full focus:border-none" />
 		</form>
 	{/snippet}
 

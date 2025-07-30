@@ -204,7 +204,7 @@
 					<div class="flex flex-col items-start gap-1 font-light">
 						<h4 class="font-medium">{offer?.address.name}</h4>
 						<span>{`${offer?.address.city}, ${offer?.address.province}`}</span>
-						<span class="text-start">{offer?.address.address}</span>
+						<span class="text-start">{offer?.address.detail}</span>
 					</div>
 					<Divider />
 					<!-- fee -->

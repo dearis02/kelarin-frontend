@@ -377,10 +377,10 @@
 			<h1 class="text-2xl font-semibold text-black">Rate</h1>
 			<h3 class="black text-lg">Are you happy with the service?</h3>
 			<div class="mt-5">
-				<span class="text-black">{order?.offer.service.name}</span>
+				<span class="text-black">{order?.service.name}</span>
 				<div class="flex items-center gap-x-3">
-					<img src={order?.offer.service_provider.logo_url} alt="provider-logo" class="size-10 rounded-full object-cover" />
-					<span>{order?.offer.service_provider.name}</span>
+					<img src={order?.service.service_provider.logo_url} alt="provider-logo" class="size-10 rounded-full object-cover" />
+					<span>{order?.service.service_provider.name}</span>
 				</div>
 			</div>
 			<div class="mt-3">
@@ -404,10 +404,10 @@
 
 			<div class="mt-9 grid grid-flow-row gap-y-4 text-black">
 				<div>
-					<span class="text-lg font-semibold text-black">{order?.offer.service.name}</span>
+					<span class="text-lg font-semibold text-black">{order?.service.name}</span>
 					<div class="flex items-center gap-x-3">
-						<img src={order?.offer.service_provider.logo_url} alt="provider-logo" class="size-10 rounded-full object-cover" />
-						<span>{order?.offer.service_provider.name}</span>
+						<img src={order?.service.service_provider.logo_url} alt="provider-logo" class="size-10 rounded-full object-cover" />
+						<span>{order?.service.service_provider.name}</span>
 					</div>
 				</div>
 				<div class="text-black">

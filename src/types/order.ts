@@ -1,6 +1,6 @@
-import type Decimal from 'decimal.js';
+import type { OfferStatus } from './offer';
 import type { PaymentStatus } from './payment';
-import type { OfferNegotiationStatus } from './offer';
+import type { ServiceRule } from './service';
 
 export enum OrderStatus {
 	PENDING = 'pending',
@@ -44,7 +44,7 @@ export type OrderGetAllResPayment = {
 	payment_link: string;
 };
 
-export interface OrderGetByIDRes {
+export type OrderGetByIDRes = {
 	id: string;
 	offer_id: string;
 	service_fee: string;
@@ -55,59 +55,45 @@ export interface OrderGetByIDRes {
 	rated: boolean;
 	created_at: Date;
 	offer: OrderGetByIDResOffer;
-	payment: OrderGetByIDResOfferPayment | null;
-}
+	service: OrderGetByIDResService;
+	address: OrderGetByIDResAddress;
+	payment: OrderGetByIDResPayment | null;
+};
 
 export type OrderGetByIDResOffer = {
 	id: string;
-	service_cost: string;
 	detail: string;
-	service_start_date: Date;
-	service_end_date: Date;
-	service_start_time: string;
-	service_end_time: string;
-	service_time_time_zone: string;
-	status: string;
-	has_pending_negotiation: boolean;
-	created_at: Date;
-	service: OrderGetByIDResOfferService;
-	service_provider: OrderGetByIDResOfferServiceServiceProvider;
-	address: OrderGetByIDResOfferAddress;
-	negotiations: OrderGetByIDResOfferNegotiation[];
-};
-
-export type OrderGetByIDResOfferNegotiation = {
-	id: string;
-	Message: string;
-	requested_service_cost: Decimal;
-	status: OfferNegotiationStatus;
+	status: OfferStatus;
 	created_at: Date;
 };
 
-export interface OrderGetByIDResOfferAddress {
-	id: string;
+export type OrderGetByIDResAddress = {
 	name: string;
 	province: string;
 	city: string;
 	lat: number;
 	lng: number;
-	address: string;
-}
+	detail: string;
+};
 
-export interface OrderGetByIDResOfferService {
+export type OrderGetByIDResService = {
 	id: string;
 	name: string;
-}
+	delivery_methods: string[];
+	rules: ServiceRule[];
+	description: string;
+	service_provider: OrderGetByIDResOfferServiceServiceProvider;
+};
 
-export interface OrderGetByIDResOfferServiceServiceProvider {
+export type OrderGetByIDResOfferServiceServiceProvider = {
 	id: string;
 	name: string;
 	logo_url: string;
 	received_rating_count: number;
 	received_rating_average: number;
-}
+};
 
-export interface OrderGetByIDResOfferPayment {
+export type OrderGetByIDResPayment = {
 	id: string;
 	reference: string;
 	payment_method_name: string;
@@ -120,7 +106,7 @@ export interface OrderGetByIDResOfferPayment {
 	expired_at: string;
 	created_at: string;
 	updated_at: string | null;
-}
+};
 
 export type OrderGenerateQRCodeReq = {
 	order_id: string;

@@ -1,5 +1,5 @@
-import { parseTime } from '$lib/utils';
 import { formatRupiah } from '$util/format_rupiah';
+import dayjs from 'dayjs';
 import type Decimal from 'decimal.js';
 import { z } from 'zod';
 
@@ -40,17 +40,24 @@ const offerCreateSchema = (minCost: number) =>
 				.transform((val) => `${val}:00`)
 		})
 		.superRefine((data, ctx) => {
-			const today = new Date().toLocaleDateString('en-CA', { dateStyle: 'short' });
+			// const today = new Date().toLocaleDateString('en-CA', { dateStyle: 'short' });
+			const today = dayjs();
 
-			const currentTime = new Date().getTime();
-			let startTime: number = 0;
-			try {
-				startTime = parseTime(data.service_start_time).getTime();
-			} catch (error) {
-				console.log(error);
-			}
+			const startDate = dayjs(data.service_start_date);
+			const endDate = dayjs(data.service_end_date);
 
-			if (data.service_start_date < today) {
+			const startTime = dayjs(dayjs().format('YYYY-MM-DD') + ' ' + data.service_start_time);
+			let endTime = dayjs(dayjs().format('YYYY-MM-DD') + ' ' + data.service_end_time);
+
+			const currentTime = today.toDate().getTime();
+			// let startTime: number = 0;
+			// try {
+			// startTime = parseTime(data.service_start_time).getTime();
+			// } catch (error) {
+			// 	console.error(error);
+			// }
+
+			if (startDate.isBefore(today, 'date')) {
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
 					message: 'start date cannot be in the past',
@@ -66,8 +73,8 @@ const offerCreateSchema = (minCost: number) =>
 				});
 			}
 
-			if (data.service_start_date == today) {
-				if (startTime < currentTime) {
+			if (startDate.isSame(today, 'date')) {
+				if (startTime.toDate().getTime() < currentTime) {
 					ctx.addIssue({
 						code: z.ZodIssueCode.custom,
 						message: 'start time cannot be in the past',
@@ -75,13 +82,26 @@ const offerCreateSchema = (minCost: number) =>
 					});
 				}
 
-				if (startTime < currentTime + 60 * 60 * 1000) {
-					console.log('less than one hour');
-
+				if (startTime.toDate().getTime() < currentTime + 60 * 60 * 1000) {
 					ctx.addIssue({
 						code: z.ZodIssueCode.custom,
 						message: 'start time must be more than 1 hour from now',
 						path: ['service_start_time']
+					});
+				}
+			}
+
+			if (startDate.isSame(endDate, 'day')) {
+				const endOfDayStartDate = startDate.endOf('day');
+				if (endTime.isBefore(startTime)) {
+					endTime = startDate.add(1, 'day').set('hour', endTime.hour()).set('minute', endTime.minute()).set('second', endTime.second());
+				}
+
+				if (endTime.isAfter(endOfDayStartDate)) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						message: `end time must be before or equal ${endOfDayStartDate.format('HH:mm')}`,
+						path: ['service_end_time']
 					});
 				}
 			}
@@ -144,7 +164,7 @@ export interface OfferGetByIDResAddress {
 	city: string;
 	lat: number | null;
 	lng: number | null;
-	address: string;
+	detail: string;
 }
 
 export interface OfferGetByIDResService {

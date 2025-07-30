@@ -4,15 +4,14 @@
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import '../app.css';
 	import { browser } from '$app/environment';
-	import { onMount, tick, untrack, type ComponentType } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import { loginRequiredAlert, setAuthUser, type AuthUser } from '../store/auth';
-	import { getToken, googleLoginService, isSessionExists, setLoginSession, setToken } from '../service/auth';
+	import { getToken,  isSessionExists, NewAuthService, setLoginSession, setToken } from '../service/auth';
 	import { jwtDecode } from 'jwt-decode';
 	import type { AuthDecodedAccessToken } from '../types/auth';
 	import { PUBLIC_GOOGLE_CLIENT_ID, PUBLIC_WEB_SOCKET_URL } from '$env/static/public';
-	import api from '$util/axios_interceptor';
 	import AlertDialog from '$lib/components/dialog/AlertDialog.svelte';
-	import { Axios, AxiosError, HttpStatusCode } from 'axios';
+	import {  AxiosError, HttpStatusCode } from 'axios';
 	import { isGSIClientLoaded } from '../store/google';
 	import { initFirebaseMessaging, requestPermission } from '$util/firebase';
 	import { Toaster } from '$lib/components/ui/sonner/index';
@@ -40,11 +39,24 @@
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import { COLOR_PRIMARY } from '../types/color';
 	import { selectedChatRoomID, chatRoomOpen } from '../store/chat';
-	import { isHttpError } from '@sveltejs/kit';
 	import { notificationGetAllService } from '../service/notification';
 	import type { NotificationGetAllRes } from '../types/notification';
+	import { NewAuthRepository } from '../repository/auth';
 
 	let { children } = $props();
+
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: {
+				enabled: browser,
+				retry: false,
+				refetchOnWindowFocus: false
+			}
+		}
+	});
+
+	const authRepo = NewAuthRepository();
+	const authService = NewAuthService(queryClient, authRepo);
 
 	let alertDialog = $state({
 		open: false,
@@ -56,16 +68,6 @@
 
 	let chatSheetOpen = $state(false);
 	let chatContainer = $state<HTMLDivElement>();
-
-	const queryClient = new QueryClient({
-		defaultOptions: {
-			queries: {
-				enabled: browser,
-				retry: false,
-				refetchOnWindowFocus: false
-			}
-		}
-	});
 
 	let notifications = $state<NotificationGetAllRes[]>([]);
 
@@ -82,7 +84,7 @@
 	let failedCount = $state(0);
 	let outBoundMsgs = $state<ChatOutboundMessage[]>([]);
 
-	const googleLoginMutation = googleLoginService(queryClient, api);
+	const googleLoginSvc = authService.googleLogin();
 	const chatGetAllSvc = chatGetAllService(queryClient);
 	const chatGetByIDSvc = chatGetByRoomIDService(queryClient, () => selectedChat?.room_id ?? $selectedChatRoomID);
 	const markReceivedMessagesAsSeenSvc = chatServiceMarkReceivedMessagesAsSeen(queryClient);
@@ -127,13 +129,13 @@
 
 	function handleCredentialResponse(response: any) {
 		if (response.credential) {
-			$googleLoginMutation.mutate({ id_token: response.credential });
+			$googleLoginSvc.mutate({ id_token: response.credential });
 		}
 	}
 
-	googleLoginMutation.subscribe((res) => {
+	googleLoginSvc.subscribe((res) => {
 		if (res.isSuccess) {
-			setToken(res.data.access_token, res.data.refresh_token);
+			authService.setToken(res.data.access_token, res.data.refresh_token);
 			const claims = jwtDecode<AuthDecodedAccessToken>(res.data.access_token);
 			const authUser: AuthUser = {
 				id: claims.sub,
@@ -141,7 +143,7 @@
 				role: claims.role
 			};
 			setAuthUser(authUser);
-			setLoginSession(true);
+			authService.setLoginSession(true);
 		}
 
 		if (res.isError) {
@@ -167,7 +169,7 @@
 	function initializeGoogleOneTap() {
 		isGSIClientLoaded.set(true);
 
-		window.google.accounts.id.initialize({
+		google.accounts.id.initialize({
 			client_id: PUBLIC_GOOGLE_CLIENT_ID,
 			callback: handleCredentialResponse
 		});
@@ -175,7 +177,7 @@
 
 	$effect(() => {
 		if ($isGSIClientLoaded && !isSessionExists()) {
-			window.google.accounts.id.prompt();
+			google.accounts.id.prompt();
 		}
 	});
 

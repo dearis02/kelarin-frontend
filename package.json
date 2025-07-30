@@ -51,6 +51,7 @@
 	"type": "module",
 	"dependencies": {
 		"@tanstack/svelte-query-devtools": "^5.67.3",
+		"@types/google.accounts": "^0.0.17",
 		"@types/lodash": "^4.17.16",
 		"@types/mapbox-gl": "^3.4.1",
 		"@types/pdfmake": "^0.2.11",

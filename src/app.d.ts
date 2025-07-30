@@ -1,5 +1,8 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+
+import '@types/google.accounts';
+
 declare global {
 	namespace App {
 		// interface Error {}
@@ -7,10 +10,6 @@ declare global {
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
-	}
-	interface Window {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		google: any;
 	}
 }
 

@@ -7,9 +7,23 @@ import { formatRupiah } from './format_rupiah';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import dayjsTimezone from 'dayjs/plugin/timezone';
 import { PaymentStatus } from '../types/payment';
+import BigNumber from 'bignumber.js';
 
 dayjs.extend(dayjsTimezone);
 dayjs.extend(advancedFormat);
+
+BigNumber.config({
+	DECIMAL_PLACES: 0,
+	ROUNDING_MODE: BigNumber.ROUND_CEIL
+});
+
+function calculateTotalFee(serviceFee: string, adminFee: number): BigNumber {
+	const _svcFee = new BigNumber(serviceFee);
+	const _adminFee = new BigNumber(adminFee);
+	const platformFee = new BigNumber(5000);
+
+	return _svcFee.plus(_adminFee).plus(platformFee);
+}
 
 export function generateInvoicePDF(data: OrderGetByIDRes, userName: string = '') {
 	let statusTextColor = '#7F8C8D';
@@ -100,7 +114,7 @@ export function generateInvoicePDF(data: OrderGetByIDRes, userName: string = '')
 					text: `${userName} \n`
 				},
 				{
-					text: data.offer.address.address + ', ' + data.offer.address.city + ', ' + data.offer.address.province
+					text: data.offer.address.detail + ', ' + data.offer.address.city + ', ' + data.offer.address.province
 				}
 			],
 			style: 'textBase'
@@ -158,6 +172,22 @@ export function generateInvoicePDF(data: OrderGetByIDRes, userName: string = '')
 					],
 					[
 						{
+							text: 'Payment Admin Fee',
+							alignment: 'right',
+							bold: true,
+							color: 'black',
+							fillColor: '#efefef'
+						},
+						{
+							text: formatRupiah(data.payment?.admin_fee.toString() ?? '0'),
+							alignment: 'center',
+							bold: true,
+							color: 'black',
+							fillColor: '#efefef'
+						}
+					],
+					[
+						{
 							text: 'Platform Fee',
 							alignment: 'right',
 							bold: true,
@@ -181,7 +211,8 @@ export function generateInvoicePDF(data: OrderGetByIDRes, userName: string = '')
 							fillColor: '#efefef'
 						},
 						{
-							text: formatRupiah(String(Number(data.service_fee) + 5000)),
+							// text: formatRupiah(String(Number(data.service_fee) + (data.payment?.admin_fee ?? 0) + 5000)),
+							text: formatRupiah(calculateTotalFee(data.service_fee, data.payment?.admin_fee ?? 0).toString()),
 							alignment: 'center',
 							bold: true,
 							color: 'black',

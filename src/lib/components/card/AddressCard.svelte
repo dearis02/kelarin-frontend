@@ -20,7 +20,7 @@
 		</button>
 	</div>
 	<span>{data.city}, {data.province}</span>
-	<p>{data.address}</p>
+	<p>{data.detail}</p>
 	{#if data.lat != null}
 		<Button variant="outline" onclick={onClickOpenMapDetailFn} class="w-fit">Show on Map</Button>
 	{/if}

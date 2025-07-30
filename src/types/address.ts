@@ -7,7 +7,7 @@ export type AddressGetAllRes = {
 	lng: number | null;
 	province: string;
 	city: string;
-	address: string;
+	detail: string;
 };
 
 export type AddressCreateReq = {
@@ -16,7 +16,7 @@ export type AddressCreateReq = {
 	lng: number | null;
 	province: string;
 	city: string;
-	address: string;
+	detail: string;
 };
 
 export const createAddressValidationSchema = z.object({
@@ -25,7 +25,7 @@ export const createAddressValidationSchema = z.object({
 	lng: z.number().nullable(),
 	province: z.string().min(1, 'province required'),
 	city: z.string().min(1, 'city required'),
-	address: z.string().min(1, 'address required')
+	detail: z.string().min(1, 'detail required')
 });
 
 export type AddressCreateForm = z.infer<typeof createAddressValidationSchema>;
@@ -38,7 +38,7 @@ export const updateAddressValidationSchema = z.object({
 	lng: z.number().nullable(),
 	province: z.string().min(1, 'province required'),
 	city: z.string().min(1, 'city required'),
-	address: z.string().min(1, 'address required')
+	detail: z.string().min(1, 'detail required')
 });
 
 export type AddressUpdateForm = z.infer<typeof updateAddressValidationSchema>;
