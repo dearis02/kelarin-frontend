@@ -11,8 +11,6 @@
 		Star,
 		MessageCircleMore,
 		MapPin,
-		Smartphone,
-		Phone,
 		CalendarX,
 		LoaderCircle,
 		CircleCheckBig,
@@ -261,7 +259,7 @@
 					<!-- inclusion -->
 					<div class="grid grid-flow-row place-items-start gap-y-[10px] py-4 text-justify">
 						{#each service.rules.filter((r) => r.type == 'inclusion') as rule}
-							<div class="grid grid-flow-col-dense gap-x-2">
+							<div class="grid h-fit grid-flow-col-dense gap-x-2">
 								<CircleCheck class="text-primary" size={iconSize} />
 								<span class="self-center text-sm">{rule.name}</span>
 							</div>
@@ -274,7 +272,7 @@
 					<!-- exclusion -->
 					<div class="grid grid-flow-row justify-items-start gap-y-[10px] py-4 text-justify">
 						{#each service.rules.filter((r) => r.type == 'exclusion') as rule}
-							<div class="grid grid-flow-col-dense gap-x-2">
+							<div class="grid h-fit grid-flow-col-dense gap-x-2">
 								<CircleX class="text-red-500" size={iconSize} />
 								<span class="self-center text-sm">{rule.name}.</span>
 							</div>
@@ -288,7 +286,7 @@
 				<!-- divider -->
 
 				<div class="py-8 pt-4">
-					<p class="line-clamp-5 text-justify" bind:this={descriptionRef}>
+					<p class="line-clamp-5 whitespace-pre-wrap text-justify" bind:this={descriptionRef}>
 						{service.description}
 					</p>
 					{#if showMoreDescBtn}
@@ -345,16 +343,6 @@
 						</div>
 					</div>
 				</div>
-				<div class="grid grid-flow-col-dense place-content-start gap-x-4 lg:order-3 lg:gap-x-10">
-					<div class="flex items-center gap-x-2">
-						<Smartphone class="text-primary" size="20" />
-						<span>{service.service_provider.mobile_phone_number}</span>
-					</div>
-					<div class="flex items-center gap-x-2">
-						<Phone fill={COLOR_PRIMARY} size="20" strokeWidth="0" />
-						<span>{service.service_provider.telephone != '' ? service.service_provider.telephone : '-'}</span>
-					</div>
-				</div>
 			</div>
 			<div class="mt-32">
 				<h1 class="mb-4 text-lg">User Feedbacks</h1>
@@ -396,7 +384,7 @@
 				<span class="text-start text-sm">Kelarin platform fee</span>
 				<span class="text-end text-sm">RP 5.000</span>
 				<div class="col-span-full h-[1px] w-full bg-primary"></div>
-				<span class="self-end text-sm font-medium">Total before taxes</span>
+				<span class="self-end text-sm font-medium">Total</span>
 				<div class="flex flex-col gap-y-1 self-end">
 					<span class="text-end font-medium text-[#898989]">Start From</span>
 					<span class="text-end text-sm font-medium">{formatRupiahRange(Number(service.fee_start_at) + 5000, Number(service.fee_end_at) + 5000)} </span>
@@ -446,7 +434,7 @@
 				{errors}
 				bind:value={startDate}
 				class="focus:border-none"
-				onValueChange={ (d) => {
+				onValueChange={(d) => {
 					sendOfferForm.service_start_date = d.toString();
 				}}
 			/>
@@ -455,7 +443,7 @@
 				name="service_end_date"
 				{errors}
 				bind:value={endDate}
-				onValueChange={ (d) => {
+				onValueChange={(d) => {
 					sendOfferForm.service_end_date = d.toString();
 				}}
 				class="focus:border-none"

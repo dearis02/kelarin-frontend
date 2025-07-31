@@ -47,8 +47,6 @@ export interface ServiceGetByIDResServiceProvider {
 	province: string;
 	city: string;
 	address: string;
-	mobile_phone_number: string;
-	telephone: string;
 	logo_image_url: string;
 	received_rating_count: number;
 	received_rating_average: number;
